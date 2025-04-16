@@ -108,7 +108,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 resultMultiply = Multiply(v1, k);
 		float resultDot = Dot(v1, v2);
 		float resultLength = Length(v1);
-		Vector3 resultNormalize = Normalize(v1);
+		Vector3 resultNormalize = Normalize(v2);
 
 		///
 		/// ↑更新処理ここまで
