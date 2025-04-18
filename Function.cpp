@@ -290,8 +290,6 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 {
 	for (int row = 0; row < 4; ++row)
 	{
-
-
 		// 行列の要素を表示
 		for (int column = 0; column < 4; ++column)
 		{
