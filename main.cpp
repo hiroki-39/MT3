@@ -1,77 +1,8 @@
 #include <Novice.h>
 #include <cmath>
+#include"Function.h"
 
 const char kWindowTitle[] = "LE2C_07_カトウ_ヒロキ_MT3_00_01";
-
-//ベクトル
-struct Vector3
-{
-	float x;
-	float y;
-	float z;
-};
-
-//加算
-Vector3 Add(const Vector3& v1, const Vector3& v2) {
-	Vector3 result;
-	result.x = v1.x + v2.x;
-	result.y = v1.y + v2.y;
-	result.z = v1.z + v2.z;
-	return result;
-}
-
-//減算
-Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
-	Vector3 result;
-	result.x = v1.x - v2.x;
-	result.y = v1.y - v2.y;
-	result.z = v1.z - v2.z;
-	return result;
-}
-
-//スカラー倍
-Vector3 Multiply(const Vector3& v, float scalar) {
-	Vector3 result;
-	result.x = v.x * scalar;
-	result.y = v.y * scalar;
-	result.z = v.z * scalar;
-	return result;
-}
-
-//内積
-float Dot(const Vector3& v1, const Vector3& v2) {
-	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-//長さ(ノルム)
-float Length(const Vector3& v) {
-	return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-}
-
-//正規化
-Vector3 Normalize(const Vector3& v) {
-	float length = Length(v);
-	Vector3 result;
-	if (length != 0) {
-		result.x = v.x / length;
-		result.y = v.y / length;
-		result.z = v.z / length;
-	}
-	else {
-		result.x = 0;
-		result.y = 0;
-		result.z = 0;
-	}
-	return result;
-}
-
-static const int kWindowWidth = 60;
-void vectorScreenPrintf(int x, int y, const Vector3 & vector, const char* label){
-	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
-	Novice::ScreenPrintf(x + kWindowWidth, y, "%.02f", vector.y);
-	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%.02f", vector.z);
-	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%s", label);
-}
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -80,15 +11,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	/*---変数の初期化---*/
-	Vector3 v1 = { 1.0f, 3.0f, -5.0f };
-	Vector3 v2 = { 4.0f, -1.0f, 2.0f };
-	float k = { 4.0f };
+	Function* function = new Function();
+
+	/*Vector3 v1 = { 1.0f, 3.0f, -5.0f };
+	Vector3 v2 = { 4.0f, -1.0f, 2.0f };*/
+
+	//float k = { 4.0f };
+
+	Matrix4x4 m1 =
+	{ 3.2f, 0.7f, 9.6f, 4.4f,
+	  5.5f, 1.3f, 7.8f, 2.1f,
+	  6.9f, 8.0f, 2.6f, 1.0f,
+	  0.5f, 7.2f, 5.1f,3.3f
+	};
+
+	Matrix4x4 m2 =
+	{ 4.1f, 6.5f, 3.3f, 2.2f,
+	  8.8f, 0.6f, 9.9f, 7.7f,
+	  1.1f, 5.5f, 6.6f, 0.0f,
+	  3.3f, 9.9f, 8.8f, 2.2f
+	};
+
+
 	// 1行の高さ
 	const int kRowHeight = 20;
+	// 1列の幅
+	const int kcolumnWidth = 60;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -103,12 +55,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		Vector3 resultAdd = Add(v1, v2);
-		Vector3 resultSubtract = Subtract(v1, v2);
-		Vector3 resultMultiply = Multiply(v1, k);
-		float resultDot = Dot(v1, v2);
-		float resultLength = Length(v1);
-		Vector3 resultNormalize = Normalize(v2);
+		/*---ベクトルの計算---*/
+	/*	Vector3 resultAdd = function->Add(v1, v2);
+		Vector3 resultSubtract = function->Subtract(v1, v2);
+		Vector3 resultMultiply = function->Multiply(v1, k);
+		float resultDot = function->Dot(v1, v2);
+		float resultLength = function->Length(v1);
+		Vector3 resultNormalize = function->Normalize(v2);*/
+
+		/*---行列の計算---*/
+		Matrix4x4 resultMatrixAdd = function->Add(m1, m2);
+		Matrix4x4 resultMatrixMultiply = function->Multiply(m1, m2);
+		Matrix4x4 resultMatrixSubtract = function->Subtract(m1, m2);
+		Matrix4x4 resultMatrixInverseM1 = function->Inverse(m1);
+		Matrix4x4 resultMatrixInverseM2 = function->Inverse(m2);
+		Matrix4x4 resultMatrixTransposeM1 = function->Transpose(m1);
+		Matrix4x4 resultMatrixTransposeM2 = function->Transpose(m2);
+		Matrix4x4 resultMatrixIdentity = function->MakeIdentity();
+
 
 		///
 		/// ↑更新処理ここまで
@@ -118,12 +82,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		vectorScreenPrintf(0, 0, resultAdd, ":Add");
-		vectorScreenPrintf(0, kRowHeight, resultSubtract, ":Subtract");
-		vectorScreenPrintf(0, kRowHeight * 2, resultMultiply, ":Multiply");
-		Novice::ScreenPrintf(0, kRowHeight * 3,"%.02f : Dot",resultDot);
+		/*---ベクトルの描画---*/
+		/*function->vectorScreenPrintf(0, 0, resultAdd, ":Add");
+		function->vectorScreenPrintf(0, kRowHeight, resultSubtract, ":Subtract");
+		function->vectorScreenPrintf(0, kRowHeight * 2, resultMultiply, ":Multiply");
+		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f : Dot", resultDot);
 		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f : Length", resultLength);
-		vectorScreenPrintf(0, kRowHeight * 5, resultNormalize, ": Normalize");
+		function->vectorScreenPrintf(0, kRowHeight * 5, resultNormalize, ": Normalize");*/
+
+		/*---行列の計算---*/
+		function->MatrixScreenPrintf(0, 0, resultMatrixAdd ,"Add");
+		function->MatrixScreenPrintf(0, kRowHeight * 5, resultMatrixSubtract,"Subtracrt");
+		function->MatrixScreenPrintf(0, kRowHeight * 10, resultMatrixMultiply,"Mulipty");
+		function->MatrixScreenPrintf(0, kRowHeight * 15, resultMatrixInverseM1,"inverseM1");
+		function->MatrixScreenPrintf(0, kRowHeight * 20, resultMatrixInverseM2,"inverseM2");
+		function->MatrixScreenPrintf(kcolumnWidth * 5, 0, resultMatrixTransposeM1,"transposeM1");
+		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 5, resultMatrixTransposeM2,"transposeM2");
+		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 10, resultMatrixIdentity,"identity");
 
 		///
 		/// ↑描画処理ここまで

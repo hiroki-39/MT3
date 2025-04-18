@@ -1,0 +1,133 @@
+﻿#pragma once
+#include <Novice.h>
+#include <cmath>
+#include"Vector2.h"
+#include "Vector3.h"
+#include "Vector4.h"
+#include "Matrix4x4.h"
+
+class Function
+{
+public:
+#pragma region "ベクトル"
+
+	/// <summary>
+	/// 加算
+	/// </summary>
+	/// <param name="v1">変数1</param>
+	/// <param name="v2">変数2</param>
+	/// <returns>それぞれの合計値</returns>
+	Vector3 Add(const Vector3& v1, const Vector3& v2);
+
+	/// <summary>
+	/// 減算
+	/// </summary>
+	/// <param name="v1">変数1</param>
+	/// <param name="v2">変数2</param>
+	/// <returns>それぞれの合計値</returns>
+	Vector3 Subtract(const Vector3& v1, const Vector3& v2);
+
+	/// <summary>
+	/// 乗算
+	/// </summary>
+	/// <param name="v">変数1</param>
+	/// <param name="scalar">変数2</param>
+	/// <returns>それぞれの合計値</returns>
+	Vector3 Multiply(const Vector3& v, float scalar);
+
+	/// <summary>
+	/// 内積
+	/// </summary>
+	/// <param name="v1">変数1</param>
+	/// <param name="v2">変数2</param>
+	/// <returns>合計値</returns>
+	float Dot(const Vector3& v1, const Vector3& v2);
+
+	
+	/// <summary>
+	/// 長さ(ノルム)
+	/// </summary>
+	/// <param name="v">変数</param>
+	/// <returns>長さの値</returns>
+	float Length(const Vector3& v);
+
+	/// <summary>
+	/// 正規化
+	/// </summary>
+	/// <param name="v">変数</param>
+	/// <returns>正規化した値</returns>
+	Vector3 Normalize(const Vector3& v);
+#pragma endregion
+
+#pragma region "行列"
+	/// <summary>
+	/// 行列の加算
+	/// </summary>
+	/// <param name="m1">変数1</param>
+	/// <param name="m2">変数2</param>
+	/// <returns>値</returns>
+	Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
+
+	/// <summary>
+	/// 行列の減算
+	/// </summary>
+	/// <param name="m1">変数1</param>
+	/// <param name="m2">変数2</param>
+	/// <returns>値</returns>
+	Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2);
+
+	/// <summary>
+	/// 行列の積
+	/// </summary>
+	/// <param name="m1">変数1</param>
+	/// <param name="m2">変数2</param>
+	/// <returns>値</returns>
+	Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
+
+	/// <summary>
+	/// 逆行列
+	/// </summary>
+	/// <param name="m">変数</param>
+	/// <returns>値</returns>
+	Matrix4x4 Inverse(const Matrix4x4& m);
+
+	/// <summary>
+	/// 逆行列(アフィン変換用)
+	/// </summary>
+	/// <param name="m"></param>
+	/// <returns></returns>
+	Matrix4x4 InverseAffine(const Matrix4x4& m);
+
+	/// <summary>
+	///転置行列
+	/// </summary>
+	/// <param name="m">変数</param>
+	/// <returns>値</returns>
+	Matrix4x4 Transpose(const Matrix4x4& m);
+
+	/// <summary>
+	/// 単位行列の作成
+	/// </summary>
+	/// <returns></returns>
+	Matrix4x4 MakeIdentity();
+
+#pragma endregion
+
+	/// <summary>
+	/// 描画
+	/// </summary>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <param name="vector"></param>
+	/// <param name="label"></param>
+	void vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
+
+	void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label);
+
+public:
+
+	static const int kWindowWidth = 60;
+	
+	static const int kWindowHeight = 20;
+};
+
