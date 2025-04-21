@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Novice.h>
 #include <cmath>
+#include <assert.h>
 #include"Vector2.h"
 #include "Vector3.h"
 #include "Vector4.h"
@@ -113,7 +114,28 @@ public:
 
 #pragma endregion
 
+#pragma region "拡大縮小、平行移動の行列"
+	/// <summary>
+	/// 拡大縮小行列
+	/// </summary>
+	/// <param name="scale">変数</param>
+	/// <returns>値</returns>
+	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 
+	/// <summary>
+	/// 平行移動行列
+	/// </summary>
+	/// <param name="translate">変数</param>
+	/// <returns>値</returns>
+	Matrix4x4 MakeTranslationMatrix(const Vector3& translate);
+
+	/// <summary>
+	/// 座標変換行列
+	/// </summary>
+	/// <param name="vector"></param>
+	/// <param name="matrix"></param>
+	/// <returns>値</returns>
+	Vector3 Transform(const Vector3& vector, Matrix4x4& matrix);
 
 	/// <summary>
 	/// 描画

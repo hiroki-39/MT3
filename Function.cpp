@@ -111,6 +111,7 @@ Matrix4x4 Function::Inverse(const Matrix4x4& m)
 {
 	Matrix4x4 result;
 
+	// 行列式を計算 → 逆行列が存在するか確認
 	float det =
 		m.m[0][3] * m.m[1][2] * m.m[2][1] * m.m[3][0] - m.m[0][2] * m.m[1][3] * m.m[2][1] * m.m[3][0] -
 		m.m[0][3] * m.m[1][1] * m.m[2][2] * m.m[3][0] + m.m[0][1] * m.m[1][3] * m.m[2][2] * m.m[3][0] +
@@ -125,14 +126,17 @@ Matrix4x4 Function::Inverse(const Matrix4x4& m)
 		m.m[0][2] * m.m[1][0] * m.m[2][1] * m.m[3][3] - m.m[0][0] * m.m[1][2] * m.m[2][1] * m.m[3][3] -
 		m.m[0][1] * m.m[1][0] * m.m[2][2] * m.m[3][3] + m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3];
 
+	// 行列式が0の場合、逆行列は存在しないのでそのままresultを返す
 	if (det == 0.0f)
 	{
-		// 逆行列が存在しないので単位行列でも返すか、エラー処理が必要
 		return result;
 	}
 
+	// 行列式が0でない場合、逆行列を計算
+
 	float invDet = 1.0f / det;
 
+	// 逆行列の計算式に従って各要素を計算	
 	result.m[0][0] = invDet * (
 		m.m[1][2] * m.m[2][3] * m.m[3][1] - m.m[1][3] * m.m[2][2] * m.m[3][1] +
 		m.m[1][3] * m.m[2][1] * m.m[3][2] - m.m[1][1] * m.m[2][3] * m.m[3][2] -
@@ -238,7 +242,6 @@ Matrix4x4 Function::InverseAffine(const Matrix4x4& m)
 	return result;
 }
 
-
 //転置行列
 Matrix4x4 Function::Transpose(const Matrix4x4& m)
 {
@@ -278,6 +281,72 @@ Matrix4x4 Function::MakeIdentity()
 	return result;
 }
 
+//拡大縮小行列
+Matrix4x4 Function::MakeScaleMatrix(const Vector3& scale)
+{
+	Matrix4x4 result;
+	result.m[0][0] = scale.x;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = scale.y;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = scale.z;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+//平行移動行列
+Matrix4x4 Function::MakeTranslationMatrix(const Vector3& translate)
+{
+	Matrix4x4 result;
+	result.m[0][0] = 1.0f;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 1.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f;
+	result.m[2][3] = 0.0f;
+	result.m[3][0] = translate.x;
+	result.m[3][1] = translate.y;
+	result.m[3][2] = translate.z;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
+//座標変換行列
+Vector3 Function::Transform(const Vector3& vector, Matrix4x4& matrix)
+{
+	Vector3 result;
+	// 行列とベクトルの積を計算
+	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
+	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
+	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
+	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
+	
+	assert(w != 0.0f);
+	result.x /= w;
+	result.y /= w;
+	result.z /= w;
+
+	return result;
+}
+
 //描画
 void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
@@ -296,7 +365,7 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 			// 行のラベルを表示
 			if (row == 0)
 			{
-				Novice::ScreenPrintf(x + 15, y, "%s", label);
+				Novice::ScreenPrintf(x , y, "%s", label);
 			}
 
 			Novice::ScreenPrintf(x + column * kWindowWidth, y + 20 + row * kWindowHeight,

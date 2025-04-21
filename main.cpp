@@ -36,11 +36,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	  3.3f, 9.9f, 8.8f, 2.2f
 	};
 
+	Vector3 translate = { 4.1f, 2.6f, 0.8f };
+	Vector3 scale = { 1.5f, 5.2f, 7.3f };
+
+	Vector3 point = { 2.3f, 3.8f, 1.4f };
+
+	Matrix4x4 transformationMatrix =
+	{
+		1.0f,2.0f,3.0f,4.0f,
+		3.0f,1.0f,1.0f,2.0f,
+		1.0f,4.0f,2.0f,3.0f,
+		2.0f,2.0f,1.0f,3.0f
+	};
 
 	// 1行の高さ
 	const int kRowHeight = 20;
 	// 1列の幅
-	const int kcolumnWidth = 60;
+	//const int kcolumnWidth = 60;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -55,7 +67,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		/*---ベクトルの計算---*/
+		/*---ベクトルの計算---*/ // 01_確認課題
 	/*	Vector3 resultAdd = function->Add(v1, v2);
 		Vector3 resultSubtract = function->Subtract(v1, v2);
 		Vector3 resultMultiply = function->Multiply(v1, k);
@@ -63,15 +75,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		float resultLength = function->Length(v1);
 		Vector3 resultNormalize = function->Normalize(v2);*/
 
-		/*---行列の計算---*/
-		Matrix4x4 resultMatrixAdd = function->Add(m1, m2);
+		/*---行列の計算---*/ // 02_確認課題
+		/*Matrix4x4 resultMatrixAdd = function->Add(m1, m2);
 		Matrix4x4 resultMatrixMultiply = function->Multiply(m1, m2);
 		Matrix4x4 resultMatrixSubtract = function->Subtract(m1, m2);
 		Matrix4x4 resultMatrixInverseM1 = function->Inverse(m1);
 		Matrix4x4 resultMatrixInverseM2 = function->Inverse(m2);
 		Matrix4x4 resultMatrixTransposeM1 = function->Transpose(m1);
 		Matrix4x4 resultMatrixTransposeM2 = function->Transpose(m2);
-		Matrix4x4 resultMatrixIdentity = function->MakeIdentity();
+		Matrix4x4 resultMatrixIdentity = function->MakeIdentity();*/
+
+		/*---拡大縮小行列と平行移動行列の計算---*/ // 03_確認課題
+		Matrix4x4 scaleMatrix = function->MakeScaleMatrix(scale);
+		Matrix4x4 translateMatrix = function->MakeTranslationMatrix(translate);
+		Vector3 transformed = function->Transform(point, transformationMatrix);
 
 
 		///
@@ -91,14 +108,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		function->vectorScreenPrintf(0, kRowHeight * 5, resultNormalize, ": Normalize");*/
 
 		/*---行列の計算---*/
-		function->MatrixScreenPrintf(0, 0, resultMatrixAdd ,"Add");
+		/*function->MatrixScreenPrintf(0, 0, resultMatrixAdd ,"Add");
 		function->MatrixScreenPrintf(0, kRowHeight * 5, resultMatrixSubtract,"Subtracrt");
 		function->MatrixScreenPrintf(0, kRowHeight * 10, resultMatrixMultiply,"Mulipty");
 		function->MatrixScreenPrintf(0, kRowHeight * 15, resultMatrixInverseM1,"inverseM1");
 		function->MatrixScreenPrintf(0, kRowHeight * 20, resultMatrixInverseM2,"inverseM2");
 		function->MatrixScreenPrintf(kcolumnWidth * 5, 0, resultMatrixTransposeM1,"transposeM1");
 		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 5, resultMatrixTransposeM2,"transposeM2");
-		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 10, resultMatrixIdentity,"identity");
+		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 10, resultMatrixIdentity,"identity");*/
+
+		function->vectorScreenPrintf(0, 0, transformed, "transformed");
+		function->MatrixScreenPrintf(0, 20, translateMatrix, "translateMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 6, scaleMatrix, "scaleMatrix");
 
 		///
 		/// ↑描画処理ここまで
