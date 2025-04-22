@@ -161,6 +161,19 @@ public:
 	/// <returns></returns>
 	Matrix4x4 MakeRotateZMatrix(float radian);
 
+#pragma endregion
+
+#pragma region "3次元のアフェイン変換行列"
+
+	/// <summary>
+	/// 3次元のアフィン変換行列
+	/// </summary>
+	/// <param name="scale">拡大縮小</param>
+	/// <param name="rotate">回転</param>
+	/// <param name="translate">平行移動</param>
+	/// <returns>変換した値</returns>
+	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+
 	/// <summary>
 	/// 描画
 	/// </summary>

@@ -22,36 +22,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//float k = { 4.0f };
 
-	Matrix4x4 m1 =
+	/*Matrix4x4 m1 =
 	{ 3.2f, 0.7f, 9.6f, 4.4f,
 	  5.5f, 1.3f, 7.8f, 2.1f,
 	  6.9f, 8.0f, 2.6f, 1.0f,
 	  0.5f, 7.2f, 5.1f,3.3f
-	};
+	};*/
 
-	Matrix4x4 m2 =
+	/*Matrix4x4 m2 =
 	{ 4.1f, 6.5f, 3.3f, 2.2f,
 	  8.8f, 0.6f, 9.9f, 7.7f,
 	  1.1f, 5.5f, 6.6f, 0.0f,
 	  3.3f, 9.9f, 8.8f, 2.2f
-	};
+	};*/
 
-	Vector3 translate = { 4.1f, 2.6f, 0.8f };
-	Vector3 scale = { 1.5f, 5.2f, 7.3f };
+	Vector3 scale = { 1.2f, 0.79f, -2.1f };
 	Vector3 rotate = { 0.4f, 1.43f, -0.8f };
+	Vector3 translate = { 2.7f, -4.15f, 1.57f };
 
-	Vector3 point = { 2.3f, 3.8f, 1.4f };
+	/*Vector3 point = { 2.3f, 3.8f, 1.4f };*/
 
-	Matrix4x4 transformationMatrix =
+	/*Matrix4x4 transformationMatrix =
 	{
 		1.0f,2.0f,3.0f,4.0f,
 		3.0f,1.0f,1.0f,2.0f,
 		1.0f,4.0f,2.0f,3.0f,
 		2.0f,2.0f,1.0f,3.0f
-	};
+	};*/
 
 	// 1行の高さ
-	const int kRowHeight = 20;
+	/*const int kRowHeight = 20;*/
 	// 1列の幅
 	//const int kcolumnWidth = 60;
 
@@ -92,10 +92,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 transformed = function->Transform(point, transformationMatrix);*/
 
 		/*---回転行列の計算---*/ // 04_確認課題
-		Matrix4x4 rotateXMatrix = function->MakeRotateXMatrix(rotate.x);
+		/*Matrix4x4 rotateXMatrix = function->MakeRotateXMatrix(rotate.x);
 		Matrix4x4 rotateYMatrix = function->MakeRotateYMatrix(rotate.y);
 		Matrix4x4 rotateZMatrix = function->MakeRotateZMatrix(rotate.z);
-		Matrix4x4 rotateXYZMatrix = function->Multiply(rotateXMatrix, function->Multiply(rotateYMatrix,rotateZMatrix));
+		Matrix4x4 rotateXYZMatrix = function->Multiply(rotateXMatrix, function->Multiply(rotateYMatrix,rotateZMatrix));*/
+
+		/*---アフェイン変換行列の計算---*/ // 05_確認課題
+		Matrix4x4 worldMatrix = function->MakeAffineMatrix(scale, rotate, translate);
 
 		///
 		/// ↑更新処理ここまで
@@ -129,11 +132,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		function->MatrixScreenPrintf(0, kRowHeight * 6, scaleMatrix, "scaleMatrix");*/
 
 		/*---回転行列の描画---*/
-		function->MatrixScreenPrintf(0, 0, rotateXMatrix, "rotateXMatrix");
+		/*function->MatrixScreenPrintf(0, 0, rotateXMatrix, "rotateXMatrix");
 		function->MatrixScreenPrintf(0, kRowHeight * 5, rotateYMatrix, "rotateYMatrix");
 		function->MatrixScreenPrintf(0, kRowHeight * 10, rotateZMatrix, "rotateZMatrix");
-		function->MatrixScreenPrintf(0, kRowHeight * 15, rotateXYZMatrix, "rotateXYZMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 15, rotateXYZMatrix, "rotateXYZMatrix");*/
 
+		/*---アフェイン変換行列の描画---*/
+		function->MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
 
 		///
 		/// ↑描画処理ここまで

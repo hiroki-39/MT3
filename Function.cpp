@@ -453,6 +453,30 @@ Matrix4x4 Function::MakeRotateZMatrix(float radian)
 }
 
 
+Matrix4x4 Function::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+{
+	Matrix4x4 result;
+	// 拡大縮小行列
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+	// 回転行列
+	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
+	// 平行移動行列
+	Matrix4x4 translationMatrix = MakeTranslationMatrix(translate);
+	// 拡大縮小行列と回転行列を掛け算
+	result = Multiply(scaleMatrix, rotateXMatrix);
+	// さらにY軸回転行列を掛け算
+	result = Multiply(result, rotateYMatrix);
+	// さらにZ軸回転行列を掛け算
+	result = Multiply(result, rotateZMatrix);
+	// 最後に平行移動行列を掛け算
+	result = Multiply(result, translationMatrix);
+
+	// 結果を返す
+	return result;
+}
+
 /*--- 3次元の描画 ---*/
 //ベクトル
 void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
