@@ -1,5 +1,6 @@
 ﻿#include "Function.h"
 
+/*---　3次元ベクトル ---*/
 //加算
 Vector3 Function::Add(const Vector3& v1, const Vector3& v2) {
 	Vector3 result;
@@ -54,6 +55,7 @@ Vector3 Function::Normalize(const Vector3& v) {
 	return result;
 }
 
+/*--- 3次元行列 ---*/
 //行列の加算
 Matrix4x4 Function::Add(const Matrix4x4& m1, const Matrix4x4& m2)
 {
@@ -281,6 +283,7 @@ Matrix4x4 Function::MakeIdentity()
 	return result;
 }
 
+/*--- その他 ---*/
 //拡大縮小行列
 Matrix4x4 Function::MakeScaleMatrix(const Vector3& scale)
 {
@@ -347,14 +350,118 @@ Vector3 Function::Transform(const Vector3& vector, Matrix4x4& matrix)
 	return result;
 }
 
-//描画
+//X軸回転行列
+Matrix4x4 Function::MakeRotateXMatrix(float radian)
+{
+	Matrix4x4 result;
+
+	// cos(radian)とsin(radian)を計算
+	float cosRadian = std::cosf(radian);
+	float sinRadian = std::sinf(radian);
+
+	// X軸回転行列を作成
+	result.m[0][0] = 1.0f;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = cosRadian;
+	result.m[1][2] = sinRadian;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = -sinRadian;
+	result.m[2][2] = cosRadian;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	// 行列を返す
+	return result;
+}
+
+//Y軸回転行列
+Matrix4x4 Function::MakeRotateYMatrix(float radian)
+{
+	Matrix4x4 result;
+
+	// cos(radian)とsin(radian)を計算
+	float cosRadian = std::cosf(radian);
+	float sinRadian = std::sinf(radian);
+
+	// Y軸回転行列を作成
+	result.m[0][0] = cosRadian;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = -sinRadian;
+	result.m[0][3] = 0.0f;
+	
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 1.0f;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+	
+	result.m[2][0] = sinRadian;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = cosRadian;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	// 行列を返す
+	return result;
+}
+
+//Z軸回転行列
+Matrix4x4 Function::MakeRotateZMatrix(float radian)
+{
+	Matrix4x4 result;
+
+	// cos(radian)とsin(radian)を計算
+	float cosRadian = std::cosf(radian);
+	float sinRadian = std::sinf(radian);
+
+	// Z軸回転行列を作成
+	result.m[0][0] = cosRadian;
+	result.m[0][1] = sinRadian;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+	
+	result.m[1][0] = -sinRadian;
+	result.m[1][1] = cosRadian;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	// 行列を返す
+	return result;
+}
+
+
+/*--- 3次元の描画 ---*/
+//ベクトル
 void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
 	Novice::ScreenPrintf(x + kWindowWidth, y, "%.02f", vector.y);
 	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%.02f", vector.z);
 	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%s", label);
 }
-
+//行列
 void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label)
 {
 	for (int row = 0; row < 4; ++row)

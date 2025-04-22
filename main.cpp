@@ -38,6 +38,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Vector3 translate = { 4.1f, 2.6f, 0.8f };
 	Vector3 scale = { 1.5f, 5.2f, 7.3f };
+	Vector3 rotate = { 0.4f, 1.43f, -0.8f };
 
 	Vector3 point = { 2.3f, 3.8f, 1.4f };
 
@@ -86,10 +87,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 resultMatrixIdentity = function->MakeIdentity();*/
 
 		/*---拡大縮小行列と平行移動行列の計算---*/ // 03_確認課題
-		Matrix4x4 scaleMatrix = function->MakeScaleMatrix(scale);
+		/*Matrix4x4 scaleMatrix = function->MakeScaleMatrix(scale);
 		Matrix4x4 translateMatrix = function->MakeTranslationMatrix(translate);
-		Vector3 transformed = function->Transform(point, transformationMatrix);
+		Vector3 transformed = function->Transform(point, transformationMatrix);*/
 
+		/*---回転行列の計算---*/ // 04_確認課題
+		Matrix4x4 rotateXMatrix = function->MakeRotateXMatrix(rotate.x);
+		Matrix4x4 rotateYMatrix = function->MakeRotateYMatrix(rotate.y);
+		Matrix4x4 rotateZMatrix = function->MakeRotateZMatrix(rotate.z);
+		Matrix4x4 rotateXYZMatrix = function->Multiply(rotateXMatrix, function->Multiply(rotateYMatrix,rotateZMatrix));
 
 		///
 		/// ↑更新処理ここまで
@@ -117,9 +123,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 5, resultMatrixTransposeM2,"transposeM2");
 		function->MatrixScreenPrintf(kcolumnWidth * 5, kRowHeight * 10, resultMatrixIdentity,"identity");*/
 
-		function->vectorScreenPrintf(0, 0, transformed, "transformed");
+		/*---拡大縮小行列と平行移動行列の描画---*/
+		/*function->vectorScreenPrintf(0, 0, transformed, "transformed");
 		function->MatrixScreenPrintf(0, 20, translateMatrix, "translateMatrix");
-		function->MatrixScreenPrintf(0, kRowHeight * 6, scaleMatrix, "scaleMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 6, scaleMatrix, "scaleMatrix");*/
+
+		/*---回転行列の描画---*/
+		function->MatrixScreenPrintf(0, 0, rotateXMatrix, "rotateXMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 5, rotateYMatrix, "rotateYMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 10, rotateZMatrix, "rotateZMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 15, rotateXYZMatrix, "rotateXYZMatrix");
+
 
 		///
 		/// ↑描画処理ここまで

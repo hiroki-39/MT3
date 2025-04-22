@@ -137,6 +137,30 @@ public:
 	/// <returns>値</returns>
 	Vector3 Transform(const Vector3& vector, Matrix4x4& matrix);
 
+#pragma endregion
+
+#pragma region "3次元回転行列"
+	/// <summary>
+	/// X軸回転行列
+	/// </summary>
+	/// <param name="radian"></param>
+	/// <returns></returns>
+	Matrix4x4 MakeRotateXMatrix(float radian);
+
+	/// <summary>
+	/// Y軸回転行列
+	/// </summary>
+	/// <param name="radian"></param>
+	/// <returns></returns>
+	Matrix4x4 MakeRotateYMatrix(float radian);
+
+	/// <summary>
+	/// Z軸回転行列
+	/// </summary>
+	/// <param name="radion"></param>
+	/// <returns></returns>
+	Matrix4x4 MakeRotateZMatrix(float radian);
+
 	/// <summary>
 	/// 描画
 	/// </summary>
