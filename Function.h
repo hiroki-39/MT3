@@ -174,6 +174,8 @@ public:
 	/// <returns>変換した値</returns>
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
+#pragma endregion
+
 	/// <summary>
 	/// 描画
 	/// </summary>
