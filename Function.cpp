@@ -341,6 +341,7 @@ Vector3 Function::Transform(const Vector3& vector, Matrix4x4& matrix)
 	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
 
 	assert(w != 0.0f);
+
 	result.x /= w;
 	result.y /= w;
 	result.z /= w;
@@ -538,8 +539,7 @@ Matrix4x4 Function::MakeOrthographicmatrix(float left, float top, float  right, 
 	return result;
 };
 
-//ビューポート変換行列 
-
+//ビューポート変換行列
 Matrix4x4 Function::MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth)
 {
 	Matrix4x4 result;
@@ -550,7 +550,7 @@ Matrix4x4 Function::MakeViewportMatrix(float left, float top, float width, float
 	result.m[0][3] = 0.0f;
 
 	result.m[1][0] = 0.0f;
-	result.m[1][1] = -height / 2.0f;  
+	result.m[1][1] = -height / 2.0f;
 	result.m[1][2] = 0.0f;
 	result.m[1][3] = 0.0f;
 
@@ -566,7 +566,16 @@ Matrix4x4 Function::MakeViewportMatrix(float left, float top, float width, float
 
 	// 結果を返す
 	return result;
-};
+}
+
+//クロス積
+Vector3 Function::Cross(const Vector3& v1, const Vector3& v2)
+{
+	return Vector3(
+		v1.y * v2.z - v1.z * v2.y,
+		v1.z * v2.x - v1.x * v2.z,
+		v1.x * v2.y - v1.y * v2.x);
+}
 
 /*--- 3次元の描画 ---*/
 //ベクトル
@@ -576,6 +585,7 @@ void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const cha
 	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%.02f", vector.z);
 	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%s", label);
 }
+
 //行列
 void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label)
 {

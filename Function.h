@@ -188,6 +188,8 @@ public:
 
 	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
 
+	//クロス積
+	Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 	/// <summary>
 	/// 描画
