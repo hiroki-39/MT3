@@ -44,7 +44,7 @@ public:
 	/// <returns>合計値</returns>
 	float Dot(const Vector3& v1, const Vector3& v2);
 
-	
+
 	/// <summary>
 	/// 長さ(ノルム)
 	/// </summary>
@@ -176,6 +176,19 @@ public:
 
 #pragma endregion
 
+
+	/*---レンダリングパイプライン---*/
+    //透視投影行列
+	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
+
+	//正射影行列
+	Matrix4x4 MakeOrthographicmatrix(float left, float top, float  right, float bottom, float nearClip, float farClip);
+
+	//ビューポート変換行列 
+
+	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
+
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -190,7 +203,7 @@ public:
 public:
 
 	static const int kWindowWidth = 60;
-	
+
 	static const int kWindowHeight = 20;
 };
 

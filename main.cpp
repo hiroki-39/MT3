@@ -36,9 +36,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	  3.3f, 9.9f, 8.8f, 2.2f
 	};*/
 
-	Vector3 scale = { 1.2f, 0.79f, -2.1f };
+	/*Vector3 scale = { 1.2f, 0.79f, -2.1f };
 	Vector3 rotate = { 0.4f, 1.43f, -0.8f };
-	Vector3 translate = { 2.7f, -4.15f, 1.57f };
+	Vector3 translate = { 2.7f, -4.15f, 1.57f };*/
 
 	/*Vector3 point = { 2.3f, 3.8f, 1.4f };*/
 
@@ -51,7 +51,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};*/
 
 	// 1行の高さ
-	/*const int kRowHeight = 20;*/
+	const int kRowHeight = 20;
 	// 1列の幅
 	//const int kcolumnWidth = 60;
 
@@ -98,7 +98,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 rotateXYZMatrix = function->Multiply(rotateXMatrix, function->Multiply(rotateYMatrix,rotateZMatrix));*/
 
 		/*---アフェイン変換行列の計算---*/ // 05_確認課題
-		Matrix4x4 worldMatrix = function->MakeAffineMatrix(scale, rotate, translate);
+		/*Matrix4x4 worldMatrix = function->MakeAffineMatrix(scale, rotate, translate);*/
+
+		/*---レンダリングパイプラインの計算---*/ // 01_01_確認課題
+		Matrix4x4 orthographicMatrix =
+			function->MakeOrthographicmatrix(-160.0f, 160.0f, 200.0f, 300.0f, 0.0f, 1000.0f);
+
+		Matrix4x4 perspectiveFovMatrix =
+			function->MakePerspectiveFovMatrix(0.63f, 1.33f, 0.1f, 1000.0f);
+
+		Matrix4x4 viewportMatrix =
+			function->MakeViewportMatrix(100.0f, 200.0f, 600.0f, 300.0f, 0.0f, 1.0f);
 
 		///
 		/// ↑更新処理ここまで
@@ -138,8 +148,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		function->MatrixScreenPrintf(0, kRowHeight * 15, rotateXYZMatrix, "rotateXYZMatrix");*/
 
 		/*---アフェイン変換行列の描画---*/
-		function->MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
+		/*function->MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");*/
 
+		/*---レンダリングパイプラインの描画---*/
+		function->MatrixScreenPrintf(0, 0, orthographicMatrix, "orthographicMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 5, perspectiveFovMatrix,"perspectiveFovMatrix");
+		function->MatrixScreenPrintf(0, kRowHeight * 10, viewportMatrix, "viewportMatrix");
 		///
 		/// ↑描画処理ここまで
 		///

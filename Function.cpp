@@ -46,8 +46,7 @@ Vector3 Function::Normalize(const Vector3& v) {
 		result.x = v.x / length;
 		result.y = v.y / length;
 		result.z = v.z / length;
-	}
-	else {
+	} else {
 		result.x = 0;
 		result.y = 0;
 		result.z = 0;
@@ -272,8 +271,7 @@ Matrix4x4 Function::MakeIdentity()
 			if (i == j)
 			{
 				result.m[i][j] = 1.0f;
-			}
-			else
+			} else
 			{
 				result.m[i][j] = 0.0f;
 			}
@@ -341,7 +339,7 @@ Vector3 Function::Transform(const Vector3& vector, Matrix4x4& matrix)
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
 	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
 	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
-	
+
 	assert(w != 0.0f);
 	result.x /= w;
 	result.y /= w;
@@ -398,12 +396,12 @@ Matrix4x4 Function::MakeRotateYMatrix(float radian)
 	result.m[0][1] = 0.0f;
 	result.m[0][2] = -sinRadian;
 	result.m[0][3] = 0.0f;
-	
+
 	result.m[1][0] = 0.0f;
 	result.m[1][1] = 1.0f;
 	result.m[1][2] = 0.0f;
 	result.m[1][3] = 0.0f;
-	
+
 	result.m[2][0] = sinRadian;
 	result.m[2][1] = 0.0f;
 	result.m[2][2] = cosRadian;
@@ -432,7 +430,7 @@ Matrix4x4 Function::MakeRotateZMatrix(float radian)
 	result.m[0][1] = sinRadian;
 	result.m[0][2] = 0.0f;
 	result.m[0][3] = 0.0f;
-	
+
 	result.m[1][0] = -sinRadian;
 	result.m[1][1] = cosRadian;
 	result.m[1][2] = 0.0f;
@@ -477,6 +475,99 @@ Matrix4x4 Function::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate
 	return result;
 }
 
+/*---レンダリングパイプライン---*/
+//透視投影行列
+Matrix4x4 Function::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
+{
+	Matrix4x4 result;
+
+	float cot = 1.0f / std::tanf(fovY / 2.0f);
+
+	//行列の作成
+	result.m[0][0] = cot / aspectRatio;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = cot;
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = farClip / (farClip - nearClip);
+	result.m[2][3] = 1.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
+	result.m[3][3] = 0.0f;
+
+
+	// 結果を返す
+	return result;
+};
+
+//正射影行列
+Matrix4x4 Function::MakeOrthographicmatrix(float left, float top, float  right, float bottom, float nearClip, float farClip)
+{
+	Matrix4x4 result;
+
+	result.m[0][0] = 2.0f / (right - left);
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = 2.0f / (top - bottom);
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = 1.0f / (farClip - nearClip);
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = -(right + left) / (right - left);
+	result.m[3][1] = -(top + bottom) / (top - bottom);
+	result.m[3][2] = -nearClip / (farClip - nearClip);
+	result.m[3][3] = 1.0f;
+
+	// 結果を返す
+	return result;
+};
+
+//ビューポート変換行列 
+
+Matrix4x4 Function::MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth)
+{
+	Matrix4x4 result;
+
+	result.m[0][0] = width / 2.0f;
+	result.m[0][1] = 0.0f;
+	result.m[0][2] = 0.0f;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = 0.0f;
+	result.m[1][1] = -height / 2.0f;  
+	result.m[1][2] = 0.0f;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = 0.0f;
+	result.m[2][1] = 0.0f;
+	result.m[2][2] = maxDepth - minDepth;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = left + width / 2.0f;
+	result.m[3][1] = top + height / 2.0f;
+	result.m[3][2] = minDepth;
+	result.m[3][3] = 1.0f;
+
+	// 結果を返す
+	return result;
+};
+
 /*--- 3次元の描画 ---*/
 //ベクトル
 void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
@@ -496,7 +587,7 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 			// 行のラベルを表示
 			if (row == 0)
 			{
-				Novice::ScreenPrintf(x , y, "%s", label);
+				Novice::ScreenPrintf(x, y, "%s", label);
 			}
 
 			Novice::ScreenPrintf(x + column * kWindowWidth, y + 20 + row * kWindowHeight,
@@ -506,3 +597,4 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 
 	}
 }
+
