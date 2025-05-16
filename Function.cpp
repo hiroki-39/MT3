@@ -577,6 +577,8 @@ Vector3 Function::Cross(const Vector3& v1, const Vector3& v2)
 		v1.x * v2.y - v1.y * v2.x);
 }
 
+
+
 /*--- 3次元の描画 ---*/
 //ベクトル
 void Function::vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {

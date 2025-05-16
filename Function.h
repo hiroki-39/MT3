@@ -191,6 +191,8 @@ public:
 	//クロス積
 	Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
+
+
 	/// <summary>
 	/// 描画
 	/// </summary>
