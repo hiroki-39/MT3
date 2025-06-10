@@ -7,6 +7,24 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 
+struct Line
+{
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Ray
+{
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Segment
+{
+	Vector3 origin;
+	Vector3 diff;
+};
+
 class Function
 {
 public:
@@ -191,6 +209,16 @@ public:
 	//クロス積
 	Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
+	//正射影ベクトル
+	Vector3 project(const Vector3& v1, const Vector3& v2);
+
+	/// <summary>
+	/// 最近接点を求める
+	/// </summary>
+	/// <param name="point">対象の点</param>
+	/// <param name="segment">線分</param>
+	/// <returns>最近接点の座標</returns>
+	Vector3 Closestpoint(const Vector3& point, const Segment& segment);
 
 
 	/// <summary>
