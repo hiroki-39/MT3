@@ -2,6 +2,7 @@
 #include <cmath>
 #include"Function.h"
 #include"math.h"
+#include <algorithm>
 #include <numbers>
 #include<imgui.h>
 
@@ -142,7 +143,7 @@ void DrawSphere(Sphere& sphere, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 bool IsCollision(const Sphere& s1, const Sphere& s2)
 {
 	//当たり判定
-	float distance = function.Length(function.Vector3Subtract(s1.center,s2.center));
+	float distance = function.Length(function.Vector3Subtract(s1.center, s2.center));
 
 
 	if (distance <= s1.radius + s2.radius)
@@ -187,7 +188,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{ 0.0f,1.9f,-6.25f },
 	};
 
+	//カメラの操作用変数
+	int mouseX = 0;
+	int mouseY = 0;
+	int preMouseX = 0;
+	int preMouseY = 0;;
+	int mouseWheel = 0;
+	bool isRightMouseDown = false;
 
+	Transform initialCameraPosition = cameraPosition;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
@@ -203,6 +212,63 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓更新処理ここから
 		///
 
+
+		//カメラのマウス操作
+		preMouseX = mouseX;
+		preMouseY = mouseY;
+		mouseWheel = Novice::GetWheel();
+		Novice::GetMousePosition(&mouseX, &mouseY);
+		isRightMouseDown = Novice::IsPressMouse(1);
+
+		// 感度調整
+		const float kRotateSensitivity = 0.001f;
+
+		if (keys[DIK_W])
+		{
+			cameraPosition.translate.y += 0.01f;
+		}
+
+		if (keys[DIK_S])
+		{
+			cameraPosition.translate.y -= 0.01f;
+		}
+
+		if (keys[DIK_D])
+		{
+			cameraPosition.translate.x += 0.01f;
+		}
+
+		if (keys[DIK_A])
+		{
+			cameraPosition.translate.x -= 0.01f;
+		}
+
+		// カメラ回転
+		if (isRightMouseDown)
+		{
+			float dx = float(mouseX - preMouseX);
+			float dy = float(mouseY - preMouseY);
+
+			//左右回転
+			cameraPosition.rotate.y += dx * kRotateSensitivity;
+			//上下回転
+			cameraPosition.rotate.x += dy * kRotateSensitivity;
+
+			// 上下回転を制限
+			float limit = std::numbers::pi_v<float> / 2.0f;
+			cameraPosition.rotate.x = std::clamp(cameraPosition.rotate.x, -limit, limit);
+		}
+
+		//ホイールでズーム
+		cameraPosition.translate.z += float(mouseWheel) * kRotateSensitivity;
+
+		//Rでリセット
+		if (preKeys[DIK_R] == 0 && keys[DIK_R] != 0)
+		{
+			cameraPosition = initialCameraPosition;
+		}
+
+		//当たり判定
 		if (IsCollision(sphere[0], sphere[1]))
 		{
 			sphere[0].color = 0xFF0000FF;
@@ -221,6 +287,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Matrix4x4 ViewProjectionMatrix = function.Multiply(worldMateix, function.Multiply(viewMatrix, projectionMatrix));
 		//viewPortMatrixの作成
 		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+
 
 
 		ImGui::Begin("window");
