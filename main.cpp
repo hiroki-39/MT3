@@ -13,8 +13,21 @@ struct  Sphere
 	//中心点
 	Vector3  center;
 
-
+	//半径
 	float radius;
+
+	//色
+	uint32_t color;
+};
+
+struct Transform
+{
+	//スケール
+	Vector3 scale;
+	//回転
+	Vector3 rotate;
+	//位置
+	Vector3 translate;
 };
 
 Function function;
@@ -126,6 +139,20 @@ void DrawSphere(Sphere& sphere, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 	}
 }
 
+bool IsCollision(const Sphere& s1, const Sphere& s2)
+{
+	//当たり判定
+	float distance = function.Length(function.Vector3Subtract(s1.center,s2.center));
+
+
+	if (distance <= s1.radius + s2.radius)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -139,28 +166,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	/*---変数の初期化---*/
 
-	Sphere sphere =
-	{
-		{0.0f,0.0f - 1.0f},
+	Sphere sphere[2];
+	sphere[0].center = { 0.0f,0.0f ,0.6f };
+	sphere[0].radius = { 1.0f };
+	sphere[0].color = 0xFFFFFFFF;
+	sphere[1].center = { 1.7f,0.0f ,1.0f };
+	sphere[1].radius = { 0.4f };
+	sphere[1].color = 0xFFFFFFFF;
 
-	 1.0f
-
+	Transform  transform{
+	{1.0f,1.0f,1.0f},
+	{0.0f,0.0f,0.0f},
+	{0.0f,0.0f,0.0f},
 	};
 
-	Segment segment
-	{
-		{-2.0f,-1.0f, 0.0f},
-		{ 3.0f, 2.0f, 2.0f}
+
+	Transform  cameraPosition{
+	{1.0f,1.0f,1.0f},
+	{ 0.26f,0.0f,0.0f },
+	{ 0.0f,1.9f,-6.25f },
 	};
 
-	Vector3 point{ -1.5f,0.6f,0.6f };
 
-	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
-
-
-	Vector3 cameraPosition{ 0.0f, 1.9f, -6.25f };
-
-	/*uint32_t color = 0xFFFFFFFF;*/
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
@@ -176,33 +203,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓更新処理ここから
 		///
 
-		Vector3 project = function.project(function.Subtract(point, segment.origin), segment.diff);
+		if (IsCollision(sphere[0], sphere[1]))
+		{
+			sphere[0].color = 0xFF0000FF;
+		}
+		else
+		{
+			sphere[0].color = 0xFFFFFFFF;
+		}
 
-		Vector3 closesPoint = function.Closestpoint(point, segment);
 
-		//Matrix4x4 worldMateix = function.MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
-		//Matrix4x4 cameraMatrix = function.MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, cameraPosition);
-		//Matrix4x4 viewMatrix = function.Inverse(cameraMatrix);
-		//Matrix4x4 projectionMatrix = function.MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		////WVPMatrixの作成
-		//Matrix4x4 ViewProjectionMatrix = function.Multiply(worldMateix, function.Multiply(viewMatrix, projectionMatrix));
-		////viewPortMatrixの作成
-		//Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-
-		//線
-		Matrix4x4 cameraMatrix = function.MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraPosition);
+		Matrix4x4 worldMateix = function.MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+		Matrix4x4 cameraMatrix = function.MakeAffineMatrix(cameraPosition.scale, cameraPosition.rotate, cameraPosition.translate);
 		Matrix4x4 viewMatrix = function.Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = function.MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
 		//WVPMatrixの作成
-		Matrix4x4 ViewProjectionMatrix = function.Multiply(viewMatrix, projectionMatrix);
+		Matrix4x4 ViewProjectionMatrix = function.Multiply(worldMateix, function.Multiply(viewMatrix, projectionMatrix));
 		//viewPortMatrixの作成
 		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
+
 		ImGui::Begin("window");
-		ImGui::DragFloat3("point", &point.x, 0.01f);
-		ImGui::DragFloat3("segment origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment diff", &sphere.center.x, 0.01f);
-	/*	ImGui::DragFloat("cameraRadius", &sphere.radius, 0.01f);*/
+		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
+		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
+		ImGui::DragFloat3("sphere[1].center", &sphere[1].center.x, 0.01f);
+		ImGui::DragFloat("sphere[1].radius", &sphere[1].radius, 0.01f);
 		ImGui::End();
 
 		///
@@ -213,25 +238,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓描画処理ここから
 		///
 
-		Sphere pointSphere{ point,0.01f };
-
-		Sphere closesPointsphere{ closesPoint,0.01f };
-
-		DrawSphere(pointSphere, ViewProjectionMatrix, viewportMatrix, RED);
-
-		DrawSphere(closesPointsphere, ViewProjectionMatrix, viewportMatrix, BLACK);
 
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
-		//DrawSphere(sphere, ViewProjectionMatrix, viewportMatrix, color);
+		DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);
+		DrawSphere(sphere[1], ViewProjectionMatrix, viewportMatrix, sphere[1].color);
 
-		Vector3 start = function.Transform(function.Transform(segment.origin, ViewProjectionMatrix), viewportMatrix);
 
-		Vector3 end = function.Transform(function.Transform(function.Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
 
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), WHITE);
-
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
 		///
 		/// ↑描画処理ここまで
@@ -251,6 +265,3 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Novice::Finalize();
 	return 0;
 }
-
-
-

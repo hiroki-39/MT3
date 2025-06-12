@@ -36,7 +36,7 @@ public:
 	/// <param name="v1">変数1</param>
 	/// <param name="v2">変数2</param>
 	/// <returns>それぞれの合計値</returns>
-	Vector3 Add(const Vector3& v1, const Vector3& v2);
+	Vector3 Vector3Add(const Vector3& v1, const Vector3& v2);
 
 	/// <summary>
 	/// 減算
@@ -44,7 +44,7 @@ public:
 	/// <param name="v1">変数1</param>
 	/// <param name="v2">変数2</param>
 	/// <returns>それぞれの合計値</returns>
-	Vector3 Subtract(const Vector3& v1, const Vector3& v2);
+	Vector3 Vector3Subtract(const Vector3& v1, const Vector3& v2);
 
 	/// <summary>
 	/// 乗算
@@ -52,7 +52,7 @@ public:
 	/// <param name="v">変数1</param>
 	/// <param name="scalar">変数2</param>
 	/// <returns>それぞれの合計値</returns>
-	Vector3 Multiply(const Vector3& v, float scalar);
+	Vector3 Vector3Multiply(const Vector3& v, float scalar);
 
 	/// <summary>
 	/// 内積
@@ -60,7 +60,7 @@ public:
 	/// <param name="v1">変数1</param>
 	/// <param name="v2">変数2</param>
 	/// <returns>合計値</returns>
-	float Dot(const Vector3& v1, const Vector3& v2);
+	float Vector3Dot(const Vector3& v1, const Vector3& v2);
 
 
 	/// <summary>

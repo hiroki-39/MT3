@@ -2,7 +2,7 @@
 
 /*---　3次元ベクトル ---*/
 //加算
-Vector3 Function::Add(const Vector3& v1, const Vector3& v2) {
+Vector3 Function::Vector3Add(const Vector3& v1, const Vector3& v2) {
 	Vector3 result;
 	result.x = v1.x + v2.x;
 	result.y = v1.y + v2.y;
@@ -11,7 +11,7 @@ Vector3 Function::Add(const Vector3& v1, const Vector3& v2) {
 }
 
 //減算
-Vector3 Function::Subtract(const Vector3& v1, const Vector3& v2) {
+Vector3 Function::Vector3Subtract(const Vector3& v1, const Vector3& v2) {
 	Vector3 result;
 	result.x = v1.x - v2.x;
 	result.y = v1.y - v2.y;
@@ -20,7 +20,7 @@ Vector3 Function::Subtract(const Vector3& v1, const Vector3& v2) {
 }
 
 //スカラー倍
-Vector3 Function::Multiply(const Vector3& v, float scalar) {
+Vector3 Function::Vector3Multiply(const Vector3& v, float scalar) {
 	Vector3 result;
 	result.x = v.x * scalar;
 	result.y = v.y * scalar;
@@ -29,7 +29,7 @@ Vector3 Function::Multiply(const Vector3& v, float scalar) {
 }
 
 //内積
-float Function::Dot(const Vector3& v1, const Vector3& v2) {
+float Function::Vector3Dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
@@ -580,25 +580,25 @@ Vector3 Function::Cross(const Vector3& v1, const Vector3& v2)
 //正射影ベクトル
 Vector3 Function::project(const Vector3& v1, const Vector3& v2)
 {
-	float v2LenSq = Dot(v2, v2);
+	float v2LenSq = Vector3Dot(v2, v2);
 
 	if (v2LenSq == 0.0f) 
 	{
 		return { 0, 0, 0 };
 	}; 
 
-	float t = Dot(v1, v2) / v2LenSq;
-	return Multiply(v2, t);
+	float t = Vector3Dot(v1, v2) / v2LenSq;
+	return Vector3Multiply(v2, t);
 }
 
 //最近接点
 Vector3 Function::Closestpoint(const Vector3& point, const Segment& segment)
 {
 	// 点から線分の始点へのベクトル
-	Vector3 toPoint = Subtract(point, segment.origin);
+	Vector3 toPoint = Vector3Subtract(point, segment.origin);
 
 	// 線分の長さの2乗（diff の長さの2乗）
-	float segLenSq = Dot(segment.diff, segment.diff);
+	float segLenSq = Vector3Dot(segment.diff, segment.diff);
 	if (segLenSq == 0.0f)
 	{
 		// 長さゼロの線分（点）なら始点を返す
@@ -606,14 +606,14 @@ Vector3 Function::Closestpoint(const Vector3& point, const Segment& segment)
 	}
 
 	// t = (toPoint ・ diff) / (diff ・ diff)
-	float t = Dot(toPoint, segment.diff) / segLenSq;
+	float t = Vector3Dot(toPoint, segment.diff) / segLenSq;
 
 	// t を 0 ～ 1 にクランプ
 	if (t < 0.0f) t = 0.0f;
 	if (t > 1.0f) t = 1.0f;
 
 	// 最近接点 = origin + diff * t
-	return Add(segment.origin, Multiply(segment.diff, t));
+	return Vector3Add(segment.origin, Vector3Multiply(segment.diff, t));
 }
 
 
