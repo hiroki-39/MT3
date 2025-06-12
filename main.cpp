@@ -199,10 +199,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("CameraTranslate", &cameraPosition.x, 0.01f);
-		ImGui::DragFloat3("cameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("cameraCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("cameraRadius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("point", &point.x, 0.01f);
+		ImGui::DragFloat3("segment origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment diff", &sphere.center.x, 0.01f);
+	/*	ImGui::DragFloat("cameraRadius", &sphere.radius, 0.01f);*/
 		ImGui::End();
 
 		///
