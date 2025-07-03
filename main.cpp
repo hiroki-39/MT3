@@ -31,10 +31,31 @@ struct Transform
 	Vector3 translate;
 };
 
+struct Plane
+{
+	//法線
+	Vector3 normal;
+	//距離
+	float distance;
+
+	//色
+	uint32_t color;
+};
+
 Function function;
 
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
+
+Vector3 Perpendicular(const Vector3& vector)
+{
+	if (vector.x != 0.0f || vector.y != 0.0f)
+	{
+		return { -vector.y,vector.x,0.0f };
+	}
+
+	return{ 0.0f,-vector.z,vector.y };
+}
 
 void DrawGrid(Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix)
 {
@@ -140,13 +161,40 @@ void DrawSphere(Sphere& sphere, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 	}
 }
 
-bool IsCollision(const Sphere& s1, const Sphere& s2)
+void DrawPlane(const Plane& plane, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, uint32_t color)
 {
+	//中心点を求める
+	Vector3 center = function.Vector3Multiply(plane.normal, plane.distance);
+
+	//
+	Vector3 perpendicular[4];
+	perpendicular[0] = function.Normalize(Perpendicular(plane.normal));
+	perpendicular[1] = { -perpendicular[0].x, -perpendicular[0].y,-perpendicular[0].z };
+	perpendicular[2] = function.Cross(plane.normal, perpendicular[0]);
+	perpendicular[3] = { -perpendicular[2].x, -perpendicular[2].y,-perpendicular[2].z };
+
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; index++)
+	{
+		Vector3 extend = function.Vector3Multiply(perpendicular[index], 2.0f);
+		Vector3 point = function.Vector3Add(center, extend);
+		points[index] = function.Transform(function.Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	// 平面の四辺を描画
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[2].x, (int)points[2].y, color);
+	Novice::DrawLine((int)points[2].x, (int)points[2].y, (int)points[1].x, (int)points[1].y, color);
+	Novice::DrawLine((int)points[1].x, (int)points[1].y, (int)points[3].x, (int)points[3].y, color);
+	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[0].x, (int)points[0].y, color);
+}
+
+bool IsCollision(const Sphere& sphere, const Plane& plane)
+{
+	//当たり判定の計算
+	float distance = function.Vector3Dot(plane.normal, sphere.center) - plane.distance;
+
 	//当たり判定
-	float distance = function.Length(function.Vector3Subtract(s1.center, s2.center));
-
-
-	if (distance <= s1.radius + s2.radius)
+	if (fabsf(distance) <= sphere.radius)
 	{
 		return true;
 	}
@@ -175,17 +223,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	sphere[1].radius = { 0.4f };
 	sphere[1].color = 0xFFFFFFFF;
 
-	Transform  transform{
-	{1.0f,1.0f,1.0f},
-	{0.0f,0.0f,0.0f},
-	{0.0f,0.0f,0.0f},
+	Plane plane
+	{
+		{0.0f,1.0f,0.0f},
+		1.0f,
+		0xFFFFFFFF,
+	};
+
+	Transform  transform
+	{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f},
 	};
 
 
-	Transform  cameraPosition{
-	{1.0f,1.0f,1.0f},
-	{ 0.26f,0.0f,0.0f },
-	{ 0.0f,1.9f,-6.25f },
+	Transform  cameraPosition
+	{
+		{1.0f,1.0f,1.0f},
+		{ 0.26f,0.0f,0.0f },
+		{ 0.0f,1.9f,-6.25f },
 	};
 
 	//カメラの操作用変数
@@ -269,7 +326,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		//当たり判定
-		if (IsCollision(sphere[0], sphere[1]))
+		if (IsCollision(sphere[0], plane))
 		{
 			sphere[0].color = 0xFF0000FF;
 		}
@@ -293,8 +350,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		ImGui::Begin("window");
 		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
 		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
-		ImGui::DragFloat3("sphere[1].center", &sphere[1].center.x, 0.01f);
-		ImGui::DragFloat("sphere[1].radius", &sphere[1].radius, 0.01f);
+		ImGui::DragFloat3("plane.Normal", &plane.normal.x, 0.01f);
+		plane.normal = function.Normalize(plane.normal);
+		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
 		ImGui::End();
 
 		///
@@ -309,7 +367,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
 		DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);
-		DrawSphere(sphere[1], ViewProjectionMatrix, viewportMatrix, sphere[1].color);
+		DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);
 
 
 
