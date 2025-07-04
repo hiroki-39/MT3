@@ -41,6 +41,14 @@ struct Plane
 	uint32_t color;
 };
 
+struct Triangle
+{
+	//頂点
+	Vector3 vertices[3];
+	//色
+	uint32_t color;
+};
+
 Function function;
 
 const int kWindowWidth = 1280;
@@ -187,23 +195,54 @@ void DrawPlane(const Plane& plane, Matrix4x4& viewProjectionMatrix, Matrix4x4& v
 	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[0].x, (int)points[0].y, color);
 }
 
-bool IsCollision(const Segment& segment, const Plane& plane)
+void DrawTriangle(const Triangle& triangle, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, uint32_t color)
 {
-	//当たり判定の計算
-	// 始点と終点から平面までの距離を求める
-	float d0 = function.Vector3Dot(plane.normal, segment.origin) - plane.distance;
-	float d1 = function.Vector3Dot(plane.normal, function.Vector3Add(segment.origin , segment.diff)) - plane.distance;
+	Vector3 screenVertices[3];
+
+	for (int i = 0; i < 3; ++i)
+	{
+		// ビュー・プロジェクション変換
+		Vector3 projected = function.Transform(triangle.vertices[i], viewProjectionMatrix);
+
+		// ビューポート変換
+		screenVertices[i] = function.Transform(projected, viewportMatrix);
+	}
 
 
-	//当たり判定
-	if (d0 * d1 <= 0.0f)
+	// 三辺を描画
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		color
+	);
+	Novice::DrawLine(
+		static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+		static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+		color
+	);
+}
+
+bool IsCollision(const Triangle& triangle, const Segment& segment)
+{
+	//各辺を結んだベクトルと頂点と衝突点pを結んだベクトルのクロス積を取る
+	Vector3 cross01 = function.Cross();
+	Vector3 cross12 = function.Cross();
+	Vector3 cross20 = function.Cross();
+
+	//全ての小三角形のクロス積と法線が同じ方向に向いていたら衝突
+	if (function.Vector3Dot(cross01,) >= 0.0f &&
+		function.Vector3Dot(cross12) >= 0.0f &&
+		function.Vector3Dot() >= 0.0f )
 	{
 		return true;
 	}
 
 	return false;
-
-
 
 }
 
@@ -220,6 +259,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	/*---変数の初期化---*/
 
+	Transform  transform
+	{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f},
+	};
+
+	//カメラ
+	Transform  cameraPosition
+	{
+		{1.0f,1.0f,1.0f},
+		{ 0.26f,0.0f,0.0f },
+		{ 0.0f,1.9f,-6.25f },
+	};
+
+	//線
+	Segment segment
+	{
+		{-2.0f,-1.0f, 0.0f},
+		{ 3.0f, 2.0f, 2.0f},
+		0xFFFFFFFF,
+	};
+
+	//球体
 	Sphere sphere[2];
 	sphere[0].center = { 0.0f,0.0f ,0.6f };
 	sphere[0].radius = { 1.0f };
@@ -228,6 +291,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	sphere[1].radius = { 0.4f };
 	sphere[1].color = 0xFFFFFFFF;
 
+	//平面
 	Plane plane
 	{
 		{0.0f,1.0f,0.0f},
@@ -235,26 +299,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		0xFFFFFFFF,
 	};
 
-	Transform  transform
+	//三角形
+	Triangle triangle
 	{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-	};
+		{
+			{ 0.0f,  1.0f, 0.0f },	// 頂点1
+			{ 1.0f, -1.0f, 0.0f },  // 頂点2
+			{-1.0f, -1.0f, 0.0f }   // 頂点3
+		},
 
-
-	Transform  cameraPosition
-	{
-		{1.0f,1.0f,1.0f},
-		{ 0.26f,0.0f,0.0f },
-		{ 0.0f,1.9f,-6.25f },
-	};
-
-	Segment segment
-	{
-		{-2.0f,-1.0f, 0.0f},
-		{ 3.0f, 2.0f, 2.0f},
-		0xFFFFFFFF,
+		0xFFFFFFFF
 	};
 
 
@@ -392,8 +446,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//線
 		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);
 
+		//三角形
+		DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);
+
 		//平面
-		DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);
+		/*DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);*/
 
 
 
