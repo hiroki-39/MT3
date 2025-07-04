@@ -49,6 +49,12 @@ struct Triangle
 	uint32_t color;
 };
 
+struct AABB
+{
+	Vector3 min;
+	Vector3 max;
+};
+
 Function function;
 
 const int kWindowWidth = 1280;
@@ -227,50 +233,15 @@ void DrawTriangle(const Triangle& triangle, Matrix4x4& viewProjectionMatrix, Mat
 	);
 }
 
-bool IsCollision(const Triangle& triangle, const Segment& segment)
+void DrawAABB(const AABB& aabb, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, uint32_t color)
 {
-	// 三角形の3頂点を取得
-	Vector3 v0 = triangle.vertices[0];
-	Vector3 v1 = triangle.vertices[1];
-	Vector3 v2 = triangle.vertices[2];
+	//1. AABBを構成する8頂点をmin/Maxを使って求める
 
-	// 線分の始点と終点を取得 
-	Vector3 p0 = segment.origin;
-	Vector3 p1 = function.Vector3Add(segment.origin, segment.diff);
+	//2. 8頂点をそれぞれ結んで線を引く
+}
 
-	// 線分と平面の衝突判定  
-	Plane plane;
-	plane.normal =function.Normalize(function.Cross(function.Vector3Subtract(v1, v0), function.Vector3Subtract(v2, v0)));
-	plane.distance = function.Vector3Dot(plane.normal, v0);
-
-
-	// 衝突点を計算  
-	float dot = function.Vector3Dot(plane.normal, segment.diff);
-	float distanceOriginToPlane = function.Vector3Dot(segment.origin, plane.normal) - plane.distance;
-	float t = -distanceOriginToPlane / dot;
-	Vector3 collisionPoint = function.Vector3Add(segment.origin, function.Vector3Multiply(segment.diff, t));
-
-	Vector3 v01 = function.Vector3Subtract(v1, v0);
-	Vector3 v12 = function.Vector3Subtract(v2, v1);
-	Vector3 v20 = function.Vector3Subtract(v0, v2);
-
-	Vector3 v0p = function.Vector3Subtract(collisionPoint, v0);
-	Vector3 v1p = function.Vector3Subtract(collisionPoint, v1);
-	Vector3 v2p = function.Vector3Subtract(collisionPoint, v2);
-
-	//各辺を結んだベクトルと頂点と衝突点pを結んだベクトルのクロス積を取る
-	Vector3 cross01 = function.Cross(v01, v0p);
-	Vector3 cross12 = function.Cross(v12, v1p);
-	Vector3 cross20 = function.Cross(v20, v2p);
-
-	//全ての小三角形のクロス積と法線が同じ方向に向いていたら衝突
-	if (function.Vector3Dot(cross01, cross12) >= 0.0f &&
-		function.Vector3Dot(cross12, cross20) >= 0.0f )
-	{
-		return true;
-	}
-
-	return false;
+bool IsCollision(const AABB& aabb1, const AABB& aabb2)
+{
 
 }
 
@@ -339,6 +310,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		0xFFFFFFFF
 	};
 
+	AABB aabb1{
+		.min{-0.5f,-0.5f,-0.5f},
+		.max{ 0.0f, 0.0f, 0.0f},
+	};
+
+	AABB aabb2{
+		.min{ 0.2f, 0.2f, 0.1f},
+		.max{ 1.0f, 1.0f, 1.0f},
+	};
 
 	//カメラの操作用変数
 	int mouseX = 0;
