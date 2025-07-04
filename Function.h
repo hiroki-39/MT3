@@ -23,6 +23,8 @@ struct Segment
 {
 	Vector3 origin;
 	Vector3 diff;
+	//色
+	uint32_t color;
 };
 
 class Function

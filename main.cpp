@@ -37,7 +37,6 @@ struct Plane
 	Vector3 normal;
 	//距離
 	float distance;
-
 	//色
 	uint32_t color;
 };
@@ -188,18 +187,24 @@ void DrawPlane(const Plane& plane, Matrix4x4& viewProjectionMatrix, Matrix4x4& v
 	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[0].x, (int)points[0].y, color);
 }
 
-bool IsCollision(const Sphere& sphere, const Plane& plane)
+bool IsCollision(const Segment& segment, const Plane& plane)
 {
 	//当たり判定の計算
-	float distance = function.Vector3Dot(plane.normal, sphere.center) - plane.distance;
+	// 始点と終点から平面までの距離を求める
+	float d0 = function.Vector3Dot(plane.normal, segment.origin) - plane.distance;
+	float d1 = function.Vector3Dot(plane.normal, function.Vector3Add(segment.origin , segment.diff)) - plane.distance;
+
 
 	//当たり判定
-	if (fabsf(distance) <= sphere.radius)
+	if (d0 * d1 <= 0.0f)
 	{
 		return true;
 	}
 
 	return false;
+
+
+
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -245,6 +250,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{ 0.0f,1.9f,-6.25f },
 	};
 
+	Segment segment
+	{
+		{-2.0f,-1.0f, 0.0f},
+		{ 3.0f, 2.0f, 2.0f},
+		0xFFFFFFFF,
+	};
+
+
 	//カメラの操作用変数
 	int mouseX = 0;
 	int mouseY = 0;
@@ -269,6 +282,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓更新処理ここから
 		///
 
+
+
+#pragma region "カメラ操作"
 
 		//カメラのマウス操作
 		preMouseX = mouseX;
@@ -325,14 +341,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			cameraPosition = initialCameraPosition;
 		}
 
+#pragma endregion
+
 		//当たり判定
-		if (IsCollision(sphere[0], plane))
+		if (IsCollision(segment, plane))
 		{
-			sphere[0].color = 0xFF0000FF;
+			segment.color = 0xFF0000FF;
 		}
 		else
 		{
-			sphere[0].color = 0xFFFFFFFF;
+			segment.color = 0xFFFFFFFF;
 		}
 
 
@@ -345,11 +363,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//viewPortMatrixの作成
 		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
+		Vector3 start = function.Transform(function.Transform(segment.origin, ViewProjectionMatrix), viewportMatrix);
 
+		Vector3 end = function.Transform(function.Transform(function.Vector3Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
-		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		ImGui::DragFloat3("plane.Normal", &plane.normal.x, 0.01f);
 		plane.normal = function.Normalize(plane.normal);
 		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
@@ -363,10 +383,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓描画処理ここから
 		///
 
-
+		//グリッド
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
-		DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);
+		//球
+		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
+
+		//線
+		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);
+
+		//平面
 		DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);
 
 
