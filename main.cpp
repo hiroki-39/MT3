@@ -229,15 +229,43 @@ void DrawTriangle(const Triangle& triangle, Matrix4x4& viewProjectionMatrix, Mat
 
 bool IsCollision(const Triangle& triangle, const Segment& segment)
 {
+	// 三角形の3頂点を取得
+	Vector3 v0 = triangle.vertices[0];
+	Vector3 v1 = triangle.vertices[1];
+	Vector3 v2 = triangle.vertices[2];
+
+	// 線分の始点と終点を取得 
+	Vector3 p0 = segment.origin;
+	Vector3 p1 = function.Vector3Add(segment.origin, segment.diff);
+
+	// 線分と平面の衝突判定  
+	Plane plane;
+	plane.normal =function.Normalize(function.Cross(function.Vector3Subtract(v1, v0), function.Vector3Subtract(v2, v0)));
+	plane.distance = function.Vector3Dot(plane.normal, v0);
+
+
+	// 衝突点を計算  
+	float dot = function.Vector3Dot(plane.normal, segment.diff);
+	float distanceOriginToPlane = function.Vector3Dot(segment.origin, plane.normal) - plane.distance;
+	float t = -distanceOriginToPlane / dot;
+	Vector3 collisionPoint = function.Vector3Add(segment.origin, function.Vector3Multiply(segment.diff, t));
+
+	Vector3 v01 = function.Vector3Subtract(v1, v0);
+	Vector3 v12 = function.Vector3Subtract(v2, v1);
+	Vector3 v20 = function.Vector3Subtract(v0, v2);
+
+	Vector3 v0p = function.Vector3Subtract(collisionPoint, v0);
+	Vector3 v1p = function.Vector3Subtract(collisionPoint, v1);
+	Vector3 v2p = function.Vector3Subtract(collisionPoint, v2);
+
 	//各辺を結んだベクトルと頂点と衝突点pを結んだベクトルのクロス積を取る
-	Vector3 cross01 = function.Cross();
-	Vector3 cross12 = function.Cross();
-	Vector3 cross20 = function.Cross();
+	Vector3 cross01 = function.Cross(v01, v0p);
+	Vector3 cross12 = function.Cross(v12, v1p);
+	Vector3 cross20 = function.Cross(v20, v2p);
 
 	//全ての小三角形のクロス積と法線が同じ方向に向いていたら衝突
-	if (function.Vector3Dot(cross01,) >= 0.0f &&
-		function.Vector3Dot(cross12) >= 0.0f &&
-		function.Vector3Dot() >= 0.0f )
+	if (function.Vector3Dot(cross01, cross12) >= 0.0f &&
+		function.Vector3Dot(cross12, cross20) >= 0.0f )
 	{
 		return true;
 	}
@@ -277,8 +305,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//線
 	Segment segment
 	{
-		{-2.0f,-1.0f, 0.0f},
-		{ 3.0f, 2.0f, 2.0f},
+		{ 0.0f, 0.5f, -1.0f},
+		{ 0.0f, 0.5f,  2.0f},
 		0xFFFFFFFF,
 	};
 
@@ -303,9 +331,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Triangle triangle
 	{
 		{
-			{ 0.0f,  1.0f, 0.0f },	// 頂点1
-			{ 1.0f, -1.0f, 0.0f },  // 頂点2
-			{-1.0f, -1.0f, 0.0f }   // 頂点3
+			{ -1.0f,  0.0f, 0.0f },	// 頂点1
+			{  0.0f,  1.0f, 0.0f },  // 頂点2
+			{  1.0f,  0.0f, 0.0f }   // 頂点3
 		},
 
 		0xFFFFFFFF
@@ -398,7 +426,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 		//当たり判定
-		if (IsCollision(segment, plane))
+		if (IsCollision(triangle, segment))
 		{
 			segment.color = 0xFF0000FF;
 		}
@@ -422,11 +450,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Vector3 end = function.Transform(function.Transform(function.Vector3Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
 
 		ImGui::Begin("window");
+		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
 		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
-		ImGui::DragFloat3("plane.Normal", &plane.normal.x, 0.01f);
-		plane.normal = function.Normalize(plane.normal);
-		ImGui::DragFloat("plane.distance", &plane.distance, 0.01f);
 		ImGui::End();
 
 		///
