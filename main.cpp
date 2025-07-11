@@ -53,6 +53,8 @@ struct AABB
 {
 	Vector3 min;
 	Vector3 max;
+	//色
+	uint32_t color;
 };
 
 Function function;
@@ -235,14 +237,53 @@ void DrawTriangle(const Triangle& triangle, Matrix4x4& viewProjectionMatrix, Mat
 
 void DrawAABB(const AABB& aabb, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, uint32_t color)
 {
-	//1. AABBを構成する8頂点をmin/Maxを使って求める
+	Vector3 vertices[8];
 
-	//2. 8頂点をそれぞれ結んで線を引く
+	// 1. AABBを構成する8頂点を計算（min/maxを使う）
+	vertices[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	vertices[1] = { aabb.max.x, aabb.min.y, aabb.min.z };
+	vertices[2] = { aabb.max.x, aabb.max.y, aabb.min.z };
+	vertices[3] = { aabb.min.x, aabb.max.y, aabb.min.z };
+	vertices[4] = { aabb.min.x, aabb.min.y, aabb.max.z };
+	vertices[5] = { aabb.max.x, aabb.min.y, aabb.max.z };
+	vertices[6] = { aabb.max.x, aabb.max.y, aabb.max.z };
+	vertices[7] = { aabb.min.x, aabb.max.y, aabb.max.z };
+
+	// 2. 各頂点を変換
+	for (int i = 0; i < 8; ++i)
+	{
+		// ビュー・プロジェクション変換
+		vertices[i] = function.Transform(vertices[i], viewProjectionMatrix);
+
+		// ビューポート変換
+		vertices[i] = function.Transform(vertices[i], viewportMatrix);
+	}
+
+	// 3. 12本のエッジを線で描画
+	int edges[12][2] = {
+		{0, 1}, {1, 2}, {2, 3}, {3, 0}, // 前面
+		{4, 5}, {5, 6}, {6, 7}, {7, 4}, // 背面
+		{0, 4}, {1, 5}, {2, 6}, {3, 7}  // 側面
+	};
+
+	for (int i = 0; i < 12; ++i)
+	{
+		Novice::DrawLine(static_cast<int>(vertices[edges[i][0]].x), static_cast<int>(vertices[edges[i][0]].y),
+			static_cast<int>(vertices[edges[i][1]].x), static_cast<int>(vertices[edges[i][1]].y),
+			color);
+	}
 }
 
 bool IsCollision(const AABB& aabb1, const AABB& aabb2)
 {
-
+	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
+		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
+		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z))
+	{
+		//衝突している
+		return true;
+	}
+	return false;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -315,10 +356,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		.max{ 0.0f, 0.0f, 0.0f},
 	};
 
+	aabb1.color = 0xFFFFFFFF;
+
 	AABB aabb2{
-		.min{ 0.2f, 0.2f, 0.1f},
+		.min{ 0.2f, 0.2f, 0.2f},
 		.max{ 1.0f, 1.0f, 1.0f},
 	};
+
+	aabb2.color = 0xFFFFFFFF;
 
 	//カメラの操作用変数
 	int mouseX = 0;
@@ -406,13 +451,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 		//当たり判定
-		if (IsCollision(triangle, segment))
+		if (IsCollision(aabb1, aabb2))
 		{
-			segment.color = 0xFF0000FF;
+			aabb1.color = 0xFF0000FF;
 		}
 		else
 		{
-			segment.color = 0xFFFFFFFF;
+			aabb1.color = 0xFFFFFFFF;
 		}
 
 
@@ -430,11 +475,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Vector3 end = function.Transform(function.Transform(function.Vector3Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
+		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
+		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
+		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
 		ImGui::End();
 
 		///
@@ -452,16 +496,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
 
 		//線
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);
+		/*Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);*/
 
 		//三角形
-		DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);
+		/*DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);*/
 
 		//平面
 		/*DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);*/
 
-
-
+		//AABB
+		DrawAABB(aabb1, ViewProjectionMatrix, viewportMatrix, aabb1.color);
+		DrawAABB(aabb2, ViewProjectionMatrix, viewportMatrix, aabb2.color);
 
 		///
 		/// ↑描画処理ここまで
