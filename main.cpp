@@ -274,25 +274,51 @@ void DrawAABB(const AABB& aabb, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 	}
 }
 
-bool IsCollision(const AABB& aabb, const Sphere& sphere)
+bool IsCollision(const AABB& aabb, const Segment& segment)
 {
-	// 最近接点を求める
-	Vector3 closestPoint{};
-	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
-	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
-	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
 
-	// 最近接点と球の中心との距離を求める
-	float distance = function.Length(function.Vector3Subtract(closestPoint, sphere.center));
+	Vector3 o = segment.origin;
+	Vector3 b = segment.diff;
 
 
-	if (distance <= sphere.radius)
+	float tmin = 0.0f;
+	float tmax = 1.0f;
+	const float EPS = 1e-6f;
+
+	// 各軸でスラブ交差判定
+	for (int i = 0; i < 3; ++i)
 	{
-		//衝突している
-		return true;
+		float origin = (&o.x)[i];  // o.x, o.y, o.z
+		float dir = (&b.x)[i];     // b.x, b.y, b.z
+		float slabMin = (&aabb.min.x)[i];
+		float slabMax = (&aabb.max.x)[i];
+
+		if (fabs(dir) < EPS)
+		{
+			// 線分がスラブ面と平行な場合
+			if (origin < slabMin || origin > slabMax)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			float t1 = (slabMin - origin) / dir;
+			float t2 = (slabMax - origin) / dir;
+			if (t1 > t2) std::swap(t1, t2);
+
+			tmin = max(tmin, t1);
+			tmax = min(tmax, t2);
+
+
+			if (tmin > tmax)
+			{
+				return false;
+			}
+		}
 	}
 
-	return false;
+	return true;
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -326,8 +352,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//線
 	Segment segment
 	{
-		{ 0.0f, 0.5f, -1.0f},
-		{ 0.0f, 0.5f,  2.0f},
+		{ -0.7f, 0.3f, 0.0f},
+		{  2.0f, -0.5f, 0.0f},
 		0xFFFFFFFF,
 	};
 
@@ -362,7 +388,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	AABB aabb1{
 		.min{-0.5f,-0.5f,-0.5f},
-		.max{ 0.0f, 0.0f, 0.0f},
+		.max{ 0.5f, 0.5f, 0.5f},
 	};
 
 	aabb1.color = 0xFFFFFFFF;
@@ -460,7 +486,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 		//当たり判定
-		if (IsCollision(aabb1, sphere[0]))
+		if (IsCollision(aabb1, segment))
 		{
 			aabb1.color = 0xFF0000FF;
 		}
@@ -486,8 +512,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		ImGui::Begin("window");
 		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
-		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
 		ImGui::End();
 
 		///
@@ -502,10 +528,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
 		//球
-		DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);
+		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
 
 		//線
-		/*Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);*/
+		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);
 
 		//三角形
 		/*DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);*/
