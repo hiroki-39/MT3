@@ -274,15 +274,24 @@ void DrawAABB(const AABB& aabb, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 	}
 }
 
-bool IsCollision(const AABB& aabb1, const AABB& aabb2)
+bool IsCollision(const AABB& aabb, const Sphere& sphere)
 {
-	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
-		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
-		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z))
+	// 最近接点を求める
+	Vector3 closestPoint{};
+	closestPoint.x = std::clamp(sphere.center.x, aabb.min.x, aabb.max.x);
+	closestPoint.y = std::clamp(sphere.center.y, aabb.min.y, aabb.max.y);
+	closestPoint.z = std::clamp(sphere.center.z, aabb.min.z, aabb.max.z);
+
+	// 最近接点と球の中心との距離を求める
+	float distance = function.Length(function.Vector3Subtract(closestPoint, sphere.center));
+
+
+	if (distance <= sphere.radius)
 	{
 		//衝突している
 		return true;
 	}
+
 	return false;
 }
 
@@ -324,7 +333,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//球体
 	Sphere sphere[2];
-	sphere[0].center = { 0.0f,0.0f ,0.6f };
+	sphere[0].center = { 1.0f,1.0f ,1.0f };
 	sphere[0].radius = { 1.0f };
 	sphere[0].color = 0xFFFFFFFF;
 	sphere[1].center = { 1.7f,0.0f ,1.0f };
@@ -451,7 +460,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 		//当たり判定
-		if (IsCollision(aabb1, aabb2))
+		if (IsCollision(aabb1, sphere[0]))
 		{
 			aabb1.color = 0xFF0000FF;
 		}
@@ -477,8 +486,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		ImGui::Begin("window");
 		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
-		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+		ImGui::DragFloat3("sphere[0].center", &sphere[0].center.x, 0.01f);
+		ImGui::DragFloat("sphere[0].radius", &sphere[0].radius, 0.01f);
 		ImGui::End();
 
 		///
@@ -493,7 +502,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
 		//球
-		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
+		DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);
 
 		//線
 		/*Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);*/
@@ -506,7 +515,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//AABB
 		DrawAABB(aabb1, ViewProjectionMatrix, viewportMatrix, aabb1.color);
-		DrawAABB(aabb2, ViewProjectionMatrix, viewportMatrix, aabb2.color);
+
 
 		///
 		/// ↑描画処理ここまで
