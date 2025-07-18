@@ -276,21 +276,33 @@ void DrawAABB(const AABB& aabb, Matrix4x4& viewProjectionMatrix, Matrix4x4& view
 
 bool IsCollision(const AABB& aabb, const Segment& segment)
 {
-
+	// 線分の始点
 	Vector3 o = segment.origin;
+	// 線分の方向ベクトル
 	Vector3 b = segment.diff;
 
-
+	// 線分上の交差開始点
 	float tmin = 0.0f;
+
+	// 線分上の交差終了点
 	float tmax = 1.0f;
+
+	// 浮動小数誤差許容範囲
 	const float EPS = 1e-6f;
 
 	// 各軸でスラブ交差判定
 	for (int i = 0; i < 3; ++i)
 	{
-		float origin = (&o.x)[i];  // o.x, o.y, o.z
-		float dir = (&b.x)[i];     // b.x, b.y, b.z
+		// 現在の軸の線分始点成分
+		float origin = (&o.x)[i];
+
+		// 現在の軸の線分方向成分
+		float dir = (&b.x)[i];
+
+		// 現在の軸のAABB最小
 		float slabMin = (&aabb.min.x)[i];
+
+		// 現在の軸のAABB最大
 		float slabMax = (&aabb.max.x)[i];
 
 		if (fabs(dir) < EPS)
@@ -303,22 +315,94 @@ bool IsCollision(const AABB& aabb, const Segment& segment)
 		}
 		else
 		{
+			// t1, t2: スラブ面との交点のt
 			float t1 = (slabMin - origin) / dir;
 			float t2 = (slabMax - origin) / dir;
-			if (t1 > t2) std::swap(t1, t2);
 
+			// t1が小さいように順序調整
+			if (t1 > t2)
+			{
+				std::swap(t1, t2);
+			}
+
+			//AABBとの衝突点(貫通点)のtが小さい方
 			tmin = max(tmin, t1);
+			//AABBとの衝突点(貫通点)のtが大きい方
 			tmax = min(tmax, t2);
 
 
 			if (tmin > tmax)
 			{
+				//tminがtmaxより大きい場合は衝突しいない
 				return false;
 			}
 		}
 	}
 
+	//衝突している
 	return true;
+}
+
+//ベジェ曲線
+//線形補間
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t)
+{
+	return {
+		v1.x + (v2.x - v1.x) * t,
+		v1.y + (v2.y - v1.y) * t,
+		v1.z + (v2.z - v1.z) * t
+	};
+}
+
+void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, uint32_t color)
+{
+	const int kNumSamples = 100;
+
+	Vector3 prev{};
+
+	Vector3 points[3] = { controlPoint0, controlPoint1, controlPoint2 };
+
+	//ベジェ曲線
+	for (int i = 0; i <= kNumSamples; ++i)
+	{
+		float t = static_cast<float>(i) / kNumSamples;
+
+		// 線形補間を2回
+		Vector3 p0 = Lerp(controlPoint0, controlPoint1, t);
+		Vector3 p1 = Lerp(controlPoint1, controlPoint2, t);
+		Vector3 bezierPoint = Lerp(p0, p1, t);
+
+
+		// ビュー・プロジェクション変換
+		Vector3 projected = function.Transform(bezierPoint, viewProjectionMatrix);
+
+		// ビューポート変換
+		Vector3 screen = function.Transform(projected, viewportMatrix);
+
+		// 線の描画
+		if (i > 0)
+		{
+			Novice::DrawLine(static_cast<int>(prev.x), static_cast<int>(prev.y),
+				static_cast<int>(screen.x), static_cast<int>(screen.y), color);
+		
+		}
+
+		prev = screen;
+	}
+
+	//コントロールポイント
+	for (int i = 0; i < 3; ++i)
+	{
+		// ビュー・プロジェクション変換
+		Vector3 ndc = function.Transform(points[i], viewProjectionMatrix);
+
+		// ビューポート変換
+		Vector3 screen = function.Transform(ndc, viewportMatrix);
+
+		//描画
+		Novice::DrawEllipse(static_cast<int>(screen.x), static_cast<int>(screen.y),
+			static_cast<int>(3.0f), static_cast<int>(3.0f), 0.0f, 0x000000FF, kFillModeSolid);
+	}
 }
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -399,6 +483,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	};
 
 	aabb2.color = 0xFFFFFFFF;
+
+	Vector3 controlPoints[3] = {
+		{-1.0f, 0.58f, 1.0f,},
+		{1.76f, 1.0f, -0.3f,},
+		{0.94f, -0.7f, 2.3f,},
+	};
+
 
 	//カメラの操作用変数
 	int mouseX = 0;
@@ -485,6 +576,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma endregion
 
+#pragma region "当たり判定"
+
 		//当たり判定
 		if (IsCollision(aabb1, segment))
 		{
@@ -495,6 +588,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			aabb1.color = 0xFFFFFFFF;
 		}
 
+#pragma endregion
 
 		Matrix4x4 worldMateix = function.MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 		Matrix4x4 cameraMatrix = function.MakeAffineMatrix(cameraPosition.scale, cameraPosition.rotate, cameraPosition.translate);
@@ -510,10 +604,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Vector3 end = function.Transform(function.Transform(function.Vector3Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
-		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("controlPoints[0]", &controlPoints[0].x, 0.01f);
+		ImGui::DragFloat3("controlPoints[1]", &controlPoints[1].x, 0.01f);
+		ImGui::DragFloat3("controlPoints[2]", &controlPoints[2].x, 0.01f);
 		ImGui::End();
 
 		///
@@ -531,7 +624,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
 
 		//線
-		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);
+		/*Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);*/
 
 		//三角形
 		/*DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);*/
@@ -540,8 +633,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/*DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);*/
 
 		//AABB
-		DrawAABB(aabb1, ViewProjectionMatrix, viewportMatrix, aabb1.color);
+		/*DrawAABB(aabb1, ViewProjectionMatrix, viewportMatrix, aabb1.color);*/
 
+		//二次ベジェ曲線
+		DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], ViewProjectionMatrix, viewportMatrix, 0x003CB3FF);
+
+		
+		
 
 		///
 		/// ↑描画処理ここまで
@@ -561,3 +659,5 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Novice::Finalize();
 	return 0;
 }
+
+
