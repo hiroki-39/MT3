@@ -384,7 +384,7 @@ void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, cons
 		{
 			Novice::DrawLine(static_cast<int>(prev.x), static_cast<int>(prev.y),
 				static_cast<int>(screen.x), static_cast<int>(screen.y), color);
-		
+
 		}
 
 		prev = screen;
@@ -433,63 +433,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{ 0.0f,1.9f,-6.25f },
 	};
 
-	//線
-	Segment segment
-	{
-		{ -0.7f, 0.3f, 0.0f},
-		{  2.0f, -0.5f, 0.0f},
-		0xFFFFFFFF,
-	};
-
-	//球体
-	Sphere sphere[2];
-	sphere[0].center = { 1.0f,1.0f ,1.0f };
-	sphere[0].radius = { 1.0f };
-	sphere[0].color = 0xFFFFFFFF;
-	sphere[1].center = { 1.7f,0.0f ,1.0f };
-	sphere[1].radius = { 0.4f };
-	sphere[1].color = 0xFFFFFFFF;
-
-	//平面
-	Plane plane
-	{
-		{0.0f,1.0f,0.0f},
-		1.0f,
-		0xFFFFFFFF,
-	};
-
-	//三角形
-	Triangle triangle
-	{
-		{
-			{ -1.0f,  0.0f, 0.0f },	// 頂点1
-			{  0.0f,  1.0f, 0.0f },  // 頂点2
-			{  1.0f,  0.0f, 0.0f }   // 頂点3
-		},
-
-		0xFFFFFFFF
-	};
-
-	AABB aabb1{
-		.min{-0.5f,-0.5f,-0.5f},
-		.max{ 0.5f, 0.5f, 0.5f},
-	};
-
-	aabb1.color = 0xFFFFFFFF;
-
-	AABB aabb2{
-		.min{ 0.2f, 0.2f, 0.2f},
-		.max{ 1.0f, 1.0f, 1.0f},
-	};
-
-	aabb2.color = 0xFFFFFFFF;
-
 	Vector3 controlPoints[3] = {
 		{-1.0f, 0.58f, 1.0f,},
 		{1.76f, 1.0f, -0.3f,},
 		{0.94f, -0.7f, 2.3f,},
 	};
 
+	Vector3 translates[3] = {
+		{0.2f,1.0f,0.0f},
+		{0.4f,0.0f,0.0f},
+		{0.3f,0.0f,0.0f},
+	};
+
+	Vector3 rotates[3] = {
+		{0.0f,0.0f,-0.8f},
+		{0.0f,0.0f,-1.4f},
+		{0.0f,0.0f,0.0f},
+	};
+
+	Vector3 scales[3] = {
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f},
+	};
+
+	uint32_t jointColors[3] = {
+	0xFF0000FF, // 肩 → 赤
+	0x00FF00FF, // 肘 → 緑
+	0x0000FFFF  // 手 → 青
+	};
+
+	Vector3 jointPositions[3];
+
+	Vector3 screenA;
+	Vector3 screenB;
 
 	//カメラの操作用変数
 	int mouseX = 0;
@@ -576,19 +553,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma endregion
 
-#pragma region "当たり判定"
 
-		//当たり判定
-		if (IsCollision(aabb1, segment))
-		{
-			aabb1.color = 0xFF0000FF;
-		}
-		else
-		{
-			aabb1.color = 0xFFFFFFFF;
-		}
+		// 関節のワールド行列
+		Matrix4x4 jointWorldMatrix[3];
 
-#pragma endregion
+		// アフェイン変換
+		jointWorldMatrix[0] = function.MakeAffineMatrix(
+			scales[0], rotates[0], translates[0]
+		);
+
+		// 肘 → 肩に依存
+		Matrix4x4 elbowLocal = function.MakeAffineMatrix(
+			scales[1], rotates[1], translates[1]
+		);
+
+		jointWorldMatrix[1] = function.Multiply(elbowLocal, jointWorldMatrix[0]);
+
+		// 手 → 肘に依存
+		Matrix4x4 handLocal = function.MakeAffineMatrix(
+			scales[2], rotates[2], translates[2]
+		);
+
+
+		jointWorldMatrix[2] = function.Multiply(handLocal, jointWorldMatrix[1]);
+
+
+
 
 		Matrix4x4 worldMateix = function.MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 		Matrix4x4 cameraMatrix = function.MakeAffineMatrix(cameraPosition.scale, cameraPosition.rotate, cameraPosition.translate);
@@ -599,14 +589,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//viewPortMatrixの作成
 		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		Vector3 start = function.Transform(function.Transform(segment.origin, ViewProjectionMatrix), viewportMatrix);
-
-		Vector3 end = function.Transform(function.Transform(function.Vector3Add(segment.origin, segment.diff), ViewProjectionMatrix), viewportMatrix);
+		
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("controlPoints[0]", &controlPoints[0].x, 0.01f);
-		ImGui::DragFloat3("controlPoints[1]", &controlPoints[1].x, 0.01f);
-		ImGui::DragFloat3("controlPoints[2]", &controlPoints[2].x, 0.01f);
+		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
+		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
+		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
+		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
+		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
+		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
+		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
+		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
+		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
 		ImGui::End();
 
 		///
@@ -620,26 +614,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//グリッド
 		DrawGrid(ViewProjectionMatrix, viewportMatrix);
 
-		//球
-		/*DrawSphere(sphere[0], ViewProjectionMatrix, viewportMatrix, sphere[0].color);*/
 
-		//線
-		/*Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), segment.color);*/
+		for (int i = 0; i < 2; ++i)
+		{
+			Vector3 a = jointPositions[i];       // 現在の関節
+			Vector3 b = jointPositions[i + 1];   // 次の関節
 
-		//三角形
-		/*DrawTriangle(triangle, ViewProjectionMatrix, viewportMatrix, triangle.color);*/
+			screenA = function.Transform(function.Transform(a, ViewProjectionMatrix), viewportMatrix);
 
-		//平面
-		/*DrawPlane(plane, ViewProjectionMatrix, viewportMatrix, plane.color);*/
+			screenB = function.Transform(function.Transform(b, ViewProjectionMatrix), viewportMatrix);
 
-		//AABB
-		/*DrawAABB(aabb1, ViewProjectionMatrix, viewportMatrix, aabb1.color);*/
+			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), 0xFFFFFFFF);
+		}
 
-		//二次ベジェ曲線
-		DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], ViewProjectionMatrix, viewportMatrix, 0x003CB3FF);
 
-		
-		
+		for (int i = 0; i < 3; ++i)
+		{
+			jointPositions[i] = { jointWorldMatrix[i].m[3][0], jointWorldMatrix[i].m[3][1], jointWorldMatrix[i].m[3][2] };
+
+			Sphere s;
+			s.center = jointPositions[i];
+			s.radius = 0.1f;
+			s.color = jointColors[i];
+
+			DrawSphere(s, ViewProjectionMatrix, viewportMatrix, s.color);
+		}
+
 
 		///
 		/// ↑描画処理ここまで
