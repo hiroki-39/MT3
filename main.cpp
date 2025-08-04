@@ -418,65 +418,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	/*---変数の初期化---*/
 
-	Transform  transform
-	{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-	};
-
-	//カメラ
-	Transform  cameraPosition
-	{
-		{1.0f,1.0f,1.0f},
-		{ 0.26f,0.0f,0.0f },
-		{ 0.0f,1.9f,-6.25f },
-	};
-
-	Vector3 controlPoints[3] = {
-		{-1.0f, 0.58f, 1.0f,},
-		{1.76f, 1.0f, -0.3f,},
-		{0.94f, -0.7f, 2.3f,},
-	};
-
-	Vector3 translates[3] = {
-		{0.2f,1.0f,0.0f},
-		{0.4f,0.0f,0.0f},
-		{0.3f,0.0f,0.0f},
-	};
-
-	Vector3 rotates[3] = {
-		{0.0f,0.0f,-0.8f},
-		{0.0f,0.0f,-1.4f},
-		{0.0f,0.0f,0.0f},
-	};
-
-	Vector3 scales[3] = {
-		{1.0f,1.0f,1.0f},
-		{1.0f,1.0f,1.0f},
-		{1.0f,1.0f,1.0f},
-	};
-
-	uint32_t jointColors[3] = {
-	0xFF0000FF, // 肩 → 赤
-	0x00FF00FF, // 肘 → 緑
-	0x0000FFFF  // 手 → 青
-	};
-
-	Vector3 jointPositions[3];
-
-	Vector3 screenA;
-	Vector3 screenB;
-
-	//カメラの操作用変数
-	int mouseX = 0;
-	int mouseY = 0;
-	int preMouseX = 0;
-	int preMouseY = 0;;
-	int mouseWheel = 0;
-	bool isRightMouseDown = false;
-
-	Transform initialCameraPosition = cameraPosition;
+	Vector3 a{ 0.2f,1.0f,0.0f };
+	Vector3 b{ 2.4f,3.1f,1.2f };
+	Vector3 c = a + b;
+	Vector3 d = a - b;
+	Vector3 e = a * 2.4f;
+	Vector3 rotate{ 0.4f,1.43f,-0.8f };
+	Matrix4x4 rotateXMatrix = function.MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = function.MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = function.MakeRotateZMatrix(rotate.z);
+	Matrix4x4 rotateMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
@@ -492,115 +443,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓更新処理ここから
 		///
 
-
-
-#pragma region "カメラ操作"
-
-		//カメラのマウス操作
-		preMouseX = mouseX;
-		preMouseY = mouseY;
-		mouseWheel = Novice::GetWheel();
-		Novice::GetMousePosition(&mouseX, &mouseY);
-		isRightMouseDown = Novice::IsPressMouse(1);
-
-		// 感度調整
-		const float kRotateSensitivity = 0.001f;
-
-		if (keys[DIK_W])
-		{
-			cameraPosition.translate.y += 0.01f;
-		}
-
-		if (keys[DIK_S])
-		{
-			cameraPosition.translate.y -= 0.01f;
-		}
-
-		if (keys[DIK_D])
-		{
-			cameraPosition.translate.x += 0.01f;
-		}
-
-		if (keys[DIK_A])
-		{
-			cameraPosition.translate.x -= 0.01f;
-		}
-
-		// カメラ回転
-		if (isRightMouseDown)
-		{
-			float dx = float(mouseX - preMouseX);
-			float dy = float(mouseY - preMouseY);
-
-			//左右回転
-			cameraPosition.rotate.y += dx * kRotateSensitivity;
-			//上下回転
-			cameraPosition.rotate.x += dy * kRotateSensitivity;
-
-			// 上下回転を制限
-			float limit = std::numbers::pi_v<float> / 2.0f;
-			cameraPosition.rotate.x = std::clamp(cameraPosition.rotate.x, -limit, limit);
-		}
-
-		//ホイールでズーム
-		cameraPosition.translate.z += float(mouseWheel) * kRotateSensitivity;
-
-		//Rでリセット
-		if (preKeys[DIK_R] == 0 && keys[DIK_R] != 0)
-		{
-			cameraPosition = initialCameraPosition;
-		}
-
-#pragma endregion
-
-
-		// 関節のワールド行列
-		Matrix4x4 jointWorldMatrix[3];
-
-		// アフェイン変換
-		jointWorldMatrix[0] = function.MakeAffineMatrix(
-			scales[0], rotates[0], translates[0]
-		);
-
-		// 肘 → 肩に依存
-		Matrix4x4 elbowLocal = function.MakeAffineMatrix(
-			scales[1], rotates[1], translates[1]
-		);
-
-		jointWorldMatrix[1] = function.Multiply(elbowLocal, jointWorldMatrix[0]);
-
-		// 手 → 肘に依存
-		Matrix4x4 handLocal = function.MakeAffineMatrix(
-			scales[2], rotates[2], translates[2]
-		);
-
-
-		jointWorldMatrix[2] = function.Multiply(handLocal, jointWorldMatrix[1]);
-
-
-
-
-		Matrix4x4 worldMateix = function.MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-		Matrix4x4 cameraMatrix = function.MakeAffineMatrix(cameraPosition.scale, cameraPosition.rotate, cameraPosition.translate);
-		Matrix4x4 viewMatrix = function.Inverse(cameraMatrix);
-		Matrix4x4 projectionMatrix = function.MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		//WVPMatrixの作成
-		Matrix4x4 ViewProjectionMatrix = function.Multiply(worldMateix, function.Multiply(viewMatrix, projectionMatrix));
-		//viewPortMatrixの作成
-		Matrix4x4 viewportMatrix = function.MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
-
-		
-
 		ImGui::Begin("window");
-		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
-		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
-		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
-		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
-		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
-		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
-		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
-		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
-		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
+		ImGui::Text("c:%f,%f,%f", c.x, c.y, c.z);
+		ImGui::Text("c:%f,%f,%f", d.x, d.y, d.z);
+		ImGui::Text("c:%f,%f,%f", e.x, e.y, e.z);
+		ImGui::Text(
+			"matrix:\n%f, %f, %f,%f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n", 
+			rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], 
+			rotateMatrix.m[0][3], rotateMatrix.m[1][0], rotateMatrix.m[1][1], 
+			rotateMatrix.m[1][2], rotateMatrix.m[1][3], rotateMatrix.m[2][0], 
+			rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3], 
+			rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], 
+			rotateMatrix.m[3][3]);
 		ImGui::End();
 
 		///
@@ -611,34 +465,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓描画処理ここから
 		///
 
-		//グリッド
-		DrawGrid(ViewProjectionMatrix, viewportMatrix);
-
-
-		for (int i = 0; i < 2; ++i)
-		{
-			Vector3 a = jointPositions[i];       // 現在の関節
-			Vector3 b = jointPositions[i + 1];   // 次の関節
-
-			screenA = function.Transform(function.Transform(a, ViewProjectionMatrix), viewportMatrix);
-
-			screenB = function.Transform(function.Transform(b, ViewProjectionMatrix), viewportMatrix);
-
-			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), 0xFFFFFFFF);
-		}
-
-
-		for (int i = 0; i < 3; ++i)
-		{
-			jointPositions[i] = { jointWorldMatrix[i].m[3][0], jointWorldMatrix[i].m[3][1], jointWorldMatrix[i].m[3][2] };
-
-			Sphere s;
-			s.center = jointPositions[i];
-			s.radius = 0.1f;
-			s.color = jointColors[i];
-
-			DrawSphere(s, ViewProjectionMatrix, viewportMatrix, s.color);
-		}
 
 
 		///

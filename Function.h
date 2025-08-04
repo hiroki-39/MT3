@@ -27,9 +27,12 @@ struct Segment
 	uint32_t color;
 };
 
+
+
 class Function
 {
 public:
+
 #pragma region "ベクトル"
 
 	/// <summary>
