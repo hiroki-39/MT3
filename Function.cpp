@@ -1,5 +1,8 @@
 ﻿#include "Function.h"
 
+
+
+
 /*---　3次元ベクトル ---*/
 //加算
 Vector3 Function::Vector3Add(const Vector3& v1, const Vector3& v2) {

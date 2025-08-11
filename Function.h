@@ -28,7 +28,6 @@ struct Segment
 };
 
 
-
 class Function
 {
 public:

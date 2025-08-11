@@ -1,7 +1,6 @@
 #include <Novice.h>
 #include <cmath>
 #include"Function.h"
-#include"math.h"
 #include <algorithm>
 #include <numbers>
 #include<imgui.h>
@@ -417,7 +416,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	char preKeys[256] = { 0 };
 
 	/*---変数の初期化---*/
-
 	Vector3 a{ 0.2f, 1.0f, 0.0f };
 	Vector3 b{ 2.4f, 3.1f, 1.2f };
 	Vector3 c = a + b;
@@ -443,17 +441,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		/// ↓更新処理ここから
 		///
 
+
+
+
 		ImGui::Begin("window");
 		ImGui::Text("c:%f, %f, %f", c.x, c.y, c.z);
 		ImGui::Text("c:%f, %f, %f", d.x, d.y, d.z);
 		ImGui::Text("c:%f, %f, %f", e.x, e.y, e.z);
 		ImGui::Text(
-			"matrix:\n%f, %f, %f,%f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n", 
-			rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2], 
-			rotateMatrix.m[0][3], rotateMatrix.m[1][0], rotateMatrix.m[1][1], 
-			rotateMatrix.m[1][2], rotateMatrix.m[1][3], rotateMatrix.m[2][0], 
-			rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3], 
-			rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2], 
+			"matrix:\n%f, %f, %f,%f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n",
+			rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2],
+			rotateMatrix.m[0][3], rotateMatrix.m[1][0], rotateMatrix.m[1][1],
+			rotateMatrix.m[1][2], rotateMatrix.m[1][3], rotateMatrix.m[2][0],
+			rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3],
+			rotateMatrix.m[3][0], rotateMatrix.m[3][1], rotateMatrix.m[3][2],
 			rotateMatrix.m[3][3]);
 		ImGui::End();
 
