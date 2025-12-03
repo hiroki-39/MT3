@@ -619,6 +619,44 @@ Vector3 Function::Closestpoint(const Vector3& point, const Segment& segment)
 	return Vector3Add(segment.origin, Vector3Multiply(segment.diff, t));
 }
 
+Matrix4x4 Function::MakeRotateAxisAgle(const Vector3& axis, float angle)
+{
+	Vector3 n = axis;
+	Normalize(n);  // 軸を正規化
+
+	float x = n.x;
+	float y = n.y;
+	float z = n.z;
+
+	float c = std::cos(angle);
+	float s = std::sin(angle);
+	float oneMinusC = 1.0f - c;
+
+	Matrix4x4 result{};
+
+	result.m[0][0] = c + x * x * oneMinusC;
+	result.m[0][1] = x * y * oneMinusC + z * s;
+	result.m[0][2] = x * z * oneMinusC - y * s;
+	result.m[0][3] = 0.0f;
+
+	result.m[1][0] = y * x * oneMinusC - z * s;
+	result.m[1][1] = c + y * y * oneMinusC;
+	result.m[1][2] = y * z * oneMinusC + x * s;
+	result.m[1][3] = 0.0f;
+
+	result.m[2][0] = z * x * oneMinusC + y * s;
+	result.m[2][1] = z * y * oneMinusC - x * s;
+	result.m[2][2] = c + z * z * oneMinusC;
+	result.m[2][3] = 0.0f;
+
+	result.m[3][0] = 0.0f;
+	result.m[3][1] = 0.0f;
+	result.m[3][2] = 0.0f;
+	result.m[3][3] = 1.0f;
+
+	return result;
+}
+
 
 /*--- 3次元の描画 ---*/
 //ベクトル
@@ -644,7 +682,7 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 			}
 
 			Novice::ScreenPrintf(x + column * kWindowWidth, y + 20 + row * kWindowHeight,
-				"%6.02F", matrix.m[row][column]);
+				"%6.03F", matrix.m[row][column]);
 		}
 
 

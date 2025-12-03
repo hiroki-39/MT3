@@ -224,6 +224,8 @@ public:
 	/// <returns>最近接点の座標</returns>
 	Vector3 Closestpoint(const Vector3& point, const Segment& segment);
 
+	// 任意軸回転行列を作成する関数
+	Matrix4x4 MakeRotateAxisAgle(const Vector3& axis, float angle);
 
 	/// <summary>
 	/// 描画
