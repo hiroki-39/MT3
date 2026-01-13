@@ -1,4 +1,5 @@
 ﻿#include "Function.h"
+#include <numbers>
 
 
 
@@ -655,6 +656,43 @@ Matrix4x4 Function::MakeRotateAxisAgle(const Vector3& axis, float angle)
 	result.m[3][3] = 1.0f;
 
 	return result;
+}
+
+Matrix4x4 Function::DirectionToDirection(const Vector3& from, const Vector3& to)
+{
+	// 正規化
+	Vector3 f = Normalize(from);
+	Vector3 t = Normalize(to);
+
+	// 内積（cosθ）
+	float dot = Vector3Dot(f, t);
+
+	// 同じ方向（回転不要）
+	if (dot > 0.9999f)
+	{
+		return MakeIdentity();
+	}
+
+	// 真逆方向（180度回転）
+	if (dot < -0.9999f)
+	{
+		// from と直交する適当な軸を探す
+		Vector3 axis = Cross(f, Vector3{ 1.0f, 0.0f, 0.0f });
+		if (Length(axis) < 0.0001f)
+		{
+			axis = Cross(f, Vector3{ 0.0f, 1.0f, 0.0f });
+		}
+		axis = Normalize(axis);
+
+		return MakeRotateAxisAgle(axis, std::numbers::pi_v<float>);
+	}
+
+	// 通常ケース
+	Vector3 axis = Cross(f, t);
+	float angle = std::acos(dot);
+
+	axis = Normalize(axis);
+	return MakeRotateAxisAgle(axis, angle);
 }
 
 

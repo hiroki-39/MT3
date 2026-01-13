@@ -227,6 +227,9 @@ public:
 	// 任意軸回転行列を作成する関数
 	Matrix4x4 MakeRotateAxisAgle(const Vector3& axis, float angle);
 
+	// ある方向からある方向へ向ける回転行列を作成する関数
+	Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
+
 	/// <summary>
 	/// 描画
 	/// </summary>
