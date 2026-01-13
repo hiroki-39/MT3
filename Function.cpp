@@ -120,15 +120,15 @@ Matrix4x4 Function::Inverse(const Matrix4x4& m)
 	float det =
 		m.m[0][3] * m.m[1][2] * m.m[2][1] * m.m[3][0] - m.m[0][2] * m.m[1][3] * m.m[2][1] * m.m[3][0] -
 		m.m[0][3] * m.m[1][1] * m.m[2][2] * m.m[3][0] + m.m[0][1] * m.m[1][3] * m.m[2][2] * m.m[3][0] +
-		m.m[0][2] * m.m[1][1] * m.m[2][3] * m.m[3][0] - m.m[0][1] * m.m[1][2] * m.m[2][3] * m.m[3][0] -
+		m.m[0][2] * m.m[1][1] * m.m[2][3] * m.m[3][0] - m.m[0][1] * m.m[1][2] * m.m[2][3] * m.m[3][0] - 
 		m.m[0][3] * m.m[1][2] * m.m[2][0] * m.m[3][1] + m.m[0][2] * m.m[1][3] * m.m[2][0] * m.m[3][1] +
-		m.m[0][3] * m.m[1][0] * m.m[2][2] * m.m[3][1] - m.m[0][0] * m.m[1][3] * m.m[2][2] * m.m[3][1] -
+		m.m[0][3] * m.m[1][0] * m.m[2][2] * m.m[3][1] - m.m[0][0] * m.m[1][3] * m.m[2][2] * m.m[3][1] - 
 		m.m[0][2] * m.m[1][0] * m.m[2][3] * m.m[3][1] + m.m[0][0] * m.m[1][2] * m.m[2][3] * m.m[3][1] +
-		m.m[0][3] * m.m[1][1] * m.m[2][0] * m.m[3][2] - m.m[0][1] * m.m[1][3] * m.m[2][0] * m.m[3][2] -
+		m.m[0][3] * m.m[1][1] * m.m[2][0] * m.m[3][2] - m.m[0][1] * m.m[1][3] * m.m[2][0] * m.m[3][2] - 
 		m.m[0][3] * m.m[1][0] * m.m[2][1] * m.m[3][2] + m.m[0][0] * m.m[1][3] * m.m[2][1] * m.m[3][2] +
-		m.m[0][1] * m.m[1][0] * m.m[2][3] * m.m[3][2] - m.m[0][0] * m.m[1][1] * m.m[2][3] * m.m[3][2] -
+		m.m[0][1] * m.m[1][0] * m.m[2][3] * m.m[3][2] - m.m[0][0] * m.m[1][1] * m.m[2][3] * m.m[3][2] - 
 		m.m[0][2] * m.m[1][1] * m.m[2][0] * m.m[3][3] + m.m[0][1] * m.m[1][2] * m.m[2][0] * m.m[3][3] +
-		m.m[0][2] * m.m[1][0] * m.m[2][1] * m.m[3][3] - m.m[0][0] * m.m[1][2] * m.m[2][1] * m.m[3][3] -
+		m.m[0][2] * m.m[1][0] * m.m[2][1] * m.m[3][3] - m.m[0][0] * m.m[1][2] * m.m[2][1] * m.m[3][3] - 
 		m.m[0][1] * m.m[1][0] * m.m[2][2] * m.m[3][3] + m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3];
 
 	// 行列式が0の場合、逆行列は存在しないのでそのままresultを返す
@@ -695,6 +695,78 @@ Matrix4x4 Function::DirectionToDirection(const Vector3& from, const Vector3& to)
 	return MakeRotateAxisAgle(axis, angle);
 }
 
+Quaternion Function::Multiply(const Quaternion& lhs, const Quaternion& rhs)
+{
+	Quaternion result;
+
+	result.w = lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z;
+	result.x = lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y;
+	result.y = lhs.w * rhs.y - lhs.x * rhs.z + lhs.y * rhs.w + lhs.z * rhs.x;
+	result.z = lhs.w * rhs.z + lhs.x * rhs.y - lhs.y * rhs.x + lhs.z * rhs.w;
+
+	return result;
+}
+
+Quaternion Function::IdentityQuaternion()
+{
+	return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+Quaternion Function::Conjugate(const Quaternion& quaternion)
+{
+	return Quaternion{
+	-quaternion.x,
+	-quaternion.y,
+	-quaternion.z,
+	 quaternion.w
+	};
+}
+
+float Function::Norm(const Quaternion& quaternion)
+{
+	return std::sqrt(
+		quaternion.x * quaternion.x +
+		quaternion.y * quaternion.y +
+		quaternion.z * quaternion.z +
+		quaternion.w * quaternion.w
+	);
+}
+
+Quaternion Function::Normalize(const Quaternion& quaternion)
+{
+	float length = Norm(quaternion);
+	assert(length != 0.0f);
+
+	Quaternion result;
+	result.x = quaternion.x / length;
+	result.y = quaternion.y / length;
+	result.z = quaternion.z / length;
+	result.w = quaternion.w / length;
+
+	return result;
+}
+
+Quaternion Function::Inverse(const Quaternion& quaternion)
+{
+	float lengthSq =
+		quaternion.x * quaternion.x +
+		quaternion.y * quaternion.y +
+		quaternion.z * quaternion.z +
+		quaternion.w * quaternion.w;
+
+	assert(lengthSq != 0.0f);
+
+	Quaternion conjugate = Conjugate(quaternion);
+
+	Quaternion result;
+	result.x = conjugate.x / lengthSq;
+	result.y = conjugate.y / lengthSq;
+	result.z = conjugate.z / lengthSq;
+	result.w = conjugate.w / lengthSq;
+
+	return result;
+}
+
 
 /*--- 3次元の描画 ---*/
 //ベクトル
@@ -725,5 +797,15 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 
 
 	}
+}
+
+// 四元数表示関数（x, y, z, w を横並びで表示）
+void Function::QuaternionScreenPrintf(int x, int y, const Quaternion& q, const char* label)
+{
+	Novice::ScreenPrintf(x, y, "%6.03f", q.x);
+	Novice::ScreenPrintf(x + kWindowWidth, y, "%6.03f", q.y);
+	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%6.03f", q.z);
+	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%6.03f", q.w);
+	Novice::ScreenPrintf(x + kWindowWidth * 4, y, "%s", label);
 }
 

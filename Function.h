@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Novice.h>
 #include <cmath>
+#include <cassert>
 #include <assert.h>
 #include"Vector2.h"
 #include "Vector3.h"
@@ -27,6 +28,13 @@ struct Segment
 	uint32_t color;
 };
 
+struct Quaternion
+{
+	float x;
+	float y;
+	float z;
+	float w;
+};
 
 class Function
 {
@@ -230,6 +238,19 @@ public:
 	// ある方向からある方向へ向ける回転行列を作成する関数
 	Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
 
+
+	Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
+
+	Quaternion IdentityQuaternion();
+
+	Quaternion Conjugate(const Quaternion& quaternion);
+
+	float Norm(const Quaternion& quaternion);
+
+	Quaternion Normalize(const Quaternion& quaternion);
+
+	Quaternion Inverse(const Quaternion& quaternion);
+
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -240,6 +261,9 @@ public:
 	void vectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
 
 	void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label);
+
+	// 4成分（x,y,z,w）を画面表示するための関数
+	void QuaternionScreenPrintf(int x, int y, const Quaternion& quaternion, const char* label);
 
 public:
 
