@@ -767,6 +767,87 @@ Quaternion Function::Inverse(const Quaternion& quaternion)
 	return result;
 }
 
+Quaternion Function::MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle)
+{
+	// 軸の長さ
+	float length = std::sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+	assert(length != 0.0f);
+
+	// 正規化した軸
+	Vector3 n;
+	n.x = axis.x / length;
+	n.y = axis.y / length;
+	n.z = axis.z / length;
+
+	float halfAngle = angle * 0.5f;
+	float sinHalf = std::sin(halfAngle);
+	float cosHalf = std::cos(halfAngle);
+
+	Quaternion result;
+	result.x = n.x * sinHalf;
+	result.y = n.y * sinHalf;
+	result.z = n.z * sinHalf;
+	result.w = cosHalf;
+
+	return result;
+}
+
+Vector3 Function::RotateVector(const Vector3& vector, const Quaternion& quaternion)
+{
+	// ベクトルをクォータニオン化
+	Quaternion vq;
+	vq.x = vector.x;
+	vq.y = vector.y;
+	vq.z = vector.z;
+	vq.w = 0.0f;
+
+	// q * v * q^-1
+	Quaternion qInv = Inverse(quaternion);
+	Quaternion temp = Multiply(quaternion, vq);
+	Quaternion result = Multiply(temp, qInv);
+
+	return Vector3{ result.x, result.y, result.z };
+}
+
+Matrix4x4 Function::MakeRotateMatrix(const Quaternion& quaternion)
+{
+	Quaternion q = Normalize(quaternion);
+
+	float xx = q.x * q.x;
+	float yy = q.y * q.y;
+	float zz = q.z * q.z;
+	float xy = q.x * q.y;
+	float xz = q.x * q.z;
+	float yz = q.y * q.z;
+	float wx = q.w * q.x;
+	float wy = q.w * q.y;
+	float wz = q.w * q.z;
+
+	Matrix4x4 mat{};
+
+	mat.m[0][0] = 1.0f - 2.0f * (yy + zz);
+	mat.m[0][1] = 2.0f * (xy + wz);
+	mat.m[0][2] = 2.0f * (xz - wy);
+	mat.m[0][3] = 0.0f;
+
+	mat.m[1][0] = 2.0f * (xy - wz);
+	mat.m[1][1] = 1.0f - 2.0f * (xx + zz);
+	mat.m[1][2] = 2.0f * (yz + wx);
+	mat.m[1][3] = 0.0f;
+
+	mat.m[2][0] = 2.0f * (xz + wy);
+	mat.m[2][1] = 2.0f * (yz - wx);
+	mat.m[2][2] = 1.0f - 2.0f * (xx + yy);
+	mat.m[2][3] = 0.0f;
+
+	mat.m[3][0] = 0.0f;
+	mat.m[3][1] = 0.0f;
+	mat.m[3][2] = 0.0f;
+	mat.m[3][3] = 1.0f;
+
+	return mat;
+}
+
 
 /*--- 3次元の描画 ---*/
 //ベクトル
@@ -802,10 +883,10 @@ void Function::MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const c
 // 四元数表示関数（x, y, z, w を横並びで表示）
 void Function::QuaternionScreenPrintf(int x, int y, const Quaternion& q, const char* label)
 {
-	Novice::ScreenPrintf(x, y, "%6.03f", q.x);
-	Novice::ScreenPrintf(x + kWindowWidth, y, "%6.03f", q.y);
-	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%6.03f", q.z);
-	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%6.03f", q.w);
+	Novice::ScreenPrintf(x, y, "%6.02f", q.x);
+	Novice::ScreenPrintf(x + kWindowWidth, y, "%6.02f", q.y);
+	Novice::ScreenPrintf(x + kWindowWidth * 2, y, "%6.02f", q.z);
+	Novice::ScreenPrintf(x + kWindowWidth * 3, y, "%6.02f", q.w);
 	Novice::ScreenPrintf(x + kWindowWidth * 4, y, "%s", label);
 }
 

@@ -239,17 +239,33 @@ public:
 	Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
 
 
+	// クォータニオンの乗算
 	Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
 
+	// 単位クォータニオンの作成
 	Quaternion IdentityQuaternion();
 
+	// クォータニオンの共役
 	Quaternion Conjugate(const Quaternion& quaternion);
 
+	
+	// クォータニオンのノルム
 	float Norm(const Quaternion& quaternion);
 
+	// クォータニオンの正規化
 	Quaternion Normalize(const Quaternion& quaternion);
 
+	// クォータニオンの逆数
 	Quaternion Inverse(const Quaternion& quaternion);
+
+	// 任意軸回転クォータニオンの作成
+	Quaternion MakeRotateAxisAngleQuaternion(const Vector3& axis, float angle);
+
+	// ベクトルの回転
+	Vector3 RotateVector(const Vector3& vector, const Quaternion& quaternion);
+
+	// クォータニオンから回転行列を作成する関数
+	Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
 
 	/// <summary>
 	/// 描画

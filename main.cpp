@@ -12,12 +12,9 @@ Function function;
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
 
-
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
@@ -26,15 +23,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	char preKeys[256] = { 0 };
 
 	/*---変数の初期化---*/
-	Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
-	Quaternion q2 = { 1.0f, 3.0f, 5.0f, 2.0f };
-	Quaternion identity = function.IdentityQuaternion();
-	Quaternion conj= function.Conjugate(q1);
-	Quaternion inv = function.Inverse(q1);
-	Quaternion normal = function.Normalize(q1);
-	Quaternion mult1 = function.Multiply(q1, q2);
-	Quaternion mult2 = function.Multiply(q2, q1);
-	float norm = function.Norm(q1);
+	Quaternion rotation = function.MakeRotateAxisAngleQuaternion(
+		function.Normalize(Vector3{ 1.0f,0.4f, -0.2f }), 0.45f);
+	Vector3 potintY = { 2.1f,-0.9f,1.3f };
+	Matrix4x4 rotationMatrix = function.MakeRotateMatrix(rotation);
+	Vector3 rotateByQuaternion = function.RotateVector(potintY, rotation);
+	Vector3 rotateByMatrix = function.Transform(potintY, rotationMatrix);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
@@ -58,25 +52,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		///
 		/// ↓描画処理ここから
 		///
-		
-		// 四元数の計算結果を画面に表示
-		int startX = 20;
-		int startY = 20;
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 0, identity, " : identity");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 1, conj, " : conjugate");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 2, inv, " : inverse");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 3, normal, " : normalize");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 4, mult1, " : Multiply(q1 * q2)");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 5, mult2, " : Multiply(q2 * q1)");
-		Novice::ScreenPrintf(startX, startY + Function::kWindowHeight * 6, " Norm : %.02f", norm);
 
-	
-		///
-		/// ↑描画処理ここまで
-		///
+		function.QuaternionScreenPrintf(0, Function::kWindowHeight * 0, rotation, " : rotation");
+		function.MatrixScreenPrintf(0, Function::kWindowHeight * 1, rotationMatrix, " : rotationMatrix");
+		function.vectorScreenPrintf(0, Function::kWindowHeight * 6, rotateByQuaternion, " : rotateByQuaternion");
+		function.vectorScreenPrintf(0, Function::kWindowHeight * 7, rotateByMatrix, " : rotateByQuaternion");
 
-		// フレームの終了
-		Novice::EndFrame();
+			///
+			/// ↑描画処理ここまで
+			///
+
+			// フレームの終了
+			Novice::EndFrame();
 
 		// ESCキーが押されたらループを抜ける
 		if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0)
