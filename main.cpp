@@ -62,15 +62,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// 四元数の計算結果を画面に表示
 		int startX = 20;
 		int startY = 20;
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 0, q1, "q1");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 1, q2, "q2");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 2, identity, "identity");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 3, conj, "conjugate");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 4, inv, "inverse");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 5, normal, "normalize");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 6, mult1, "q1 * q2");
-		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 7, mult2, "q2 * q1");
-		Novice::ScreenPrintf(startX, startY + Function::kWindowHeight * 8, "norm(q1): %.03f", norm);
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 0, identity, " : identity");
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 1, conj, " : conjugate");
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 2, inv, " : inverse");
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 3, normal, " : normalize");
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 4, mult1, " : Multiply(q1 * q2)");
+		function.QuaternionScreenPrintf(startX, startY + Function::kWindowHeight * 5, mult2, " : Multiply(q2 * q1)");
+		Novice::ScreenPrintf(startX, startY + Function::kWindowHeight * 6, " Norm : %.02f", norm);
 
 	
 		///
