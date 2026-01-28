@@ -848,6 +848,57 @@ Matrix4x4 Function::MakeRotateMatrix(const Quaternion& quaternion)
 	return mat;
 }
 
+Quaternion Function::Slerp(const Quaternion& q0, const Quaternion& q1, float t)
+{
+	// 念のため正規化
+	Quaternion q0n = Normalize(q0);
+	Quaternion q1n = Normalize(q1);
+
+	// 内積（cosθ）
+	float dot =
+		q0n.x * q1n.x +
+		q0n.y * q1n.y +
+		q0n.z * q1n.z +
+		q0n.w * q1n.w;
+
+	// 反対向きなら最短経路を取る
+	if (dot < 0.0f)
+	{
+		dot = -dot;
+		q1n.x = -q1n.x;
+		q1n.y = -q1n.y;
+		q1n.z = -q1n.z;
+		q1n.w = -q1n.w;
+	}
+
+	// 角度がほぼ 0 のときは Lerp
+	const float kThreshold = 0.9995f;
+	if (dot > kThreshold)
+	{
+		Quaternion result;
+		result.x = q0n.x + t * (q1n.x - q0n.x);
+		result.y = q0n.y + t * (q1n.y - q0n.y);
+		result.z = q0n.z + t * (q1n.z - q0n.z);
+		result.w = q0n.w + t * (q1n.w - q0n.w);
+		return Normalize(result);
+	}
+
+	// θ = acos(dot)
+	float theta = std::acos(dot);
+	float sinTheta = std::sin(theta);
+
+	float w0 = std::sin((1.0f - t) * theta) / sinTheta;
+	float w1 = std::sin(t * theta) / sinTheta;
+
+	Quaternion result;
+	result.x = q0n.x * w0 + q1n.x * w1;
+	result.y = q0n.y * w0 + q1n.y * w1;
+	result.z = q0n.z * w0 + q1n.z * w1;
+	result.w = q0n.w * w0 + q1n.w * w1;
+
+	return result;
+}
+
 
 /*--- 3次元の描画 ---*/
 //ベクトル

@@ -248,7 +248,6 @@ public:
 	// クォータニオンの共役
 	Quaternion Conjugate(const Quaternion& quaternion);
 
-	
 	// クォータニオンのノルム
 	float Norm(const Quaternion& quaternion);
 
@@ -266,6 +265,9 @@ public:
 
 	// クォータニオンから回転行列を作成する関数
 	Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
+	
+	// 球面線形補間
+	Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
 
 	/// <summary>
 	/// 描画
